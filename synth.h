@@ -1,0 +1,245 @@
+#pragma once
+/*
+ *  File: synth.h
+ *
+ *  Dummy Synth Class.
+ *
+ *
+ *  2021-2022 (c) Korg
+ *
+ */
+
+#include <atomic>
+#include <cstddef>
+#include <cstdint>
+
+#include <arm_neon.h>
+
+#include "unit.h"  // Note: Include common definitions for all units
+
+#include "maximilian.h"
+#include "braids/macro_oscillator.h"
+//#include "braids/settings.h"
+
+enum Params {
+    Note = 0,
+    Shape,
+    Param1,
+    Param2
+};
+
+inline float note2freq(float note) {
+    return (440.f / 32) * powf(2, (note - 9.0) / 12);
+}
+
+const float x7fff_recipf = 1.f / 32767;
+
+class Synth {
+public:
+    Synth(void) {}
+    ~Synth(void) {}
+
+    inline int8_t Init(const unit_runtime_desc_t * desc) {
+        if (desc->samplerate != 48000)
+            return k_unit_err_samplerate;
+
+        if (desc->output_channels != 2)  // should be stereo output
+            return k_unit_err_geometry;
+
+        maxiSettings::sampleRate = 48000;
+        std::memset(&osc_, 0, sizeof(osc_));
+        osc_.Init();
+
+        return k_unit_err_none;
+    }
+
+    inline void Teardown() {}
+
+    inline void Reset() {
+        gate_ = 0;
+    }
+
+    inline void Resume() {}
+
+    inline void Suspend() {}
+
+    fast_inline void Render(float * out, size_t frames) {
+        float * __restrict out_p = out;
+        const float * out_e = out_p + (frames << 1);
+        const int gate = (gate_ > 0);
+        const int bufsize = 24; // size of temp_buffer in macro_oscillator.h
+
+        osc_.set_pitch(pitch_);
+        size_t frames_next = frames;
+        int16_t buf[bufsize];
+        const uint8_t sync[bufsize] = {};
+        std::memset(buf, 0, sizeof(buf));
+        while(frames_next > bufsize) {
+            osc_.Render(sync, buf, bufsize);
+            for(int i = 0; i < bufsize ; i++, out_p += 2) {
+                vst1_f32(out_p, vdup_n_f32(gate * x7fff_recipf * buf[i]));
+            }
+            frames_next -= bufsize;
+        }
+        if (frames_next > 0) {
+            osc_.Render(sync, buf, frames_next);
+            for(int i = 0; i < frames_next ; i++, out_p += 2) {
+                vst1_f32(out_p, vdup_n_f32(gate * x7fff_recipf * buf[i]));
+            }
+        }
+    }
+
+    inline void setParameter(uint8_t index, int32_t value) {
+        p_[index] = value;
+        switch (index) {
+        case Note:
+            pitch_ = value << 7;
+            break;
+        case Shape:
+            osc_.set_shape(static_cast<braids::MacroOscillatorShape>(value));
+            break;
+        case Param1:
+        case Param2:
+            osc_.set_parameters((256 + p_[Param1]) << 6, 256 + (p_[Param2]) << 6);
+            break;
+        default:
+            break;
+        }
+    }
+
+    inline int32_t getParameterValue(uint8_t index) const {
+        return p_[index];
+    }
+
+    inline const char * getParameterStrValue(uint8_t index, int32_t value) const {
+        (void)value;
+        switch (index) {
+        case Shape:
+            if (value < 47) {
+                return ShapeStr[value];
+            } else {
+                return nullptr;
+            }
+        default:
+            break;
+        }
+        return nullptr;
+    }
+
+    inline const uint8_t * getParameterBmpValue(uint8_t index,
+                                              int32_t value) const {
+        (void)value;
+        switch (index) {
+        default:
+            break;
+        }
+        return nullptr;
+    }
+
+    inline void NoteOn(uint8_t note, uint8_t velocity) {
+        pitch_ = note << 7;
+        GateOn(velocity);
+    }
+
+    inline void NoteOff(uint8_t note) {
+        (void)note;
+        GateOff();
+    }
+
+    inline void GateOn(uint8_t velocity) {
+        amp_ = 1. / 127 * velocity;
+        gate_ += 1;
+        osc_.Strike();
+    }
+
+    inline void GateOff() {
+        if (gate_ > 0 ) {
+            gate_ -= 1;
+        }
+    }
+
+    inline void AllNoteOff() {}
+
+    inline void PitchBend(uint16_t bend) { (void)bend; }
+
+    inline void ChannelPressure(uint8_t pressure) { (void)pressure; }
+
+    inline void Aftertouch(uint8_t note, uint8_t aftertouch) {
+        (void)note;
+        (void)aftertouch;
+    }
+
+    inline void LoadPreset(uint8_t idx) { (void)idx; }
+
+    inline uint8_t getPresetIndex() const { return 0; }
+
+    /* Static Members. */
+
+    static inline const char * getPresetName(uint8_t idx) {
+        (void)idx;
+        return nullptr;
+    }
+
+private:
+    std::atomic_uint_fast32_t flags_;
+
+    int32_t p_[24];
+    braids::MacroOscillator osc_;
+
+    int16_t pitch_;
+    float amp_;
+    uint32_t gate_;
+
+    /* Private Methods. */
+    /* Constants. */
+    const char *ShapeStr[47] = {
+        "CSAW",
+        "/\\-_",
+        "//-_",
+        "FOLD",
+        "uuuu",
+        "SUB-",
+        "SUB/",
+        "SYN-",
+        "SYN/",
+        "//x3",
+        "-_x3",
+        "/\\x3",
+        "SIx3",
+        "RING",
+        "////",
+        "//uu",
+        "TOY*",
+        "ZLPF",
+        "ZPKF",
+        "ZBPF",
+        "ZHPF",
+        "VOSM",
+        "VOWL",
+        "VFOF",
+        "HARM",
+        "FM  ",
+        "FBFM",
+        "WTFM",
+        "PLUK",
+        "BOWD",
+        "BLOW",
+        "FLUT",
+        "BELL",
+        "DRUM",
+        "KICK",
+        "CYMB",
+        "SNAR",
+        "WTBL",
+        "WMAP",
+        "WLIN",
+        "WTx4",
+        "NOIS",
+        "TWNQ",
+        "CLKN",
+        "CLOU",
+        "PRTC",
+        "QPSK",
+    };
+
+};
