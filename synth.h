@@ -12,20 +12,22 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <cmath>
 
 #include <arm_neon.h>
 
 #include "unit.h"  // Note: Include common definitions for all units
 
-#include "maximilian.h"
+#include "braids/envelope.h"
 #include "braids/macro_oscillator.h"
-//#include "braids/settings.h"
 
 enum Params {
     Note = 0,
     Shape,
     Param1,
-    Param2
+    Param2,
+    Attack,
+    Decay,
 };
 
 inline float note2freq(float note) {
@@ -46,9 +48,9 @@ public:
         if (desc->output_channels != 2)  // should be stereo output
             return k_unit_err_geometry;
 
-        maxiSettings::sampleRate = 48000;
         std::memset(&osc_, 0, sizeof(osc_));
         osc_.Init();
+        envelope_.Init();
 
         return k_unit_err_none;
     }
@@ -74,17 +76,16 @@ public:
         int16_t buf[bufsize];
         const uint8_t sync[bufsize] = {};
         std::memset(buf, 0, sizeof(buf));
-        while(frames_next > bufsize) {
-            osc_.Render(sync, buf, bufsize);
-            for(int i = 0; i < bufsize ; i++, out_p += 2) {
-                vst1_f32(out_p, vdup_n_f32(gate * x7fff_recipf * buf[i]));
-            }
-            frames_next -= bufsize;
-        }
-        if (frames_next > 0) {
-            osc_.Render(sync, buf, frames_next);
-            for(int i = 0; i < frames_next ; i++, out_p += 2) {
-                vst1_f32(out_p, vdup_n_f32(gate * x7fff_recipf * buf[i]));
+
+        for(int p = 0; p < frames; p += bufsize) {
+            float env = 1.f / 65536 * envelope_.Render();
+            size_t r_size = (bufsize < (frames - p)) ? bufsize : frames - p;
+
+            osc_.Render(sync, buf, r_size);
+
+            float gain = env / 32768;
+            for(int i = 0; i < r_size ; i++, out_p += 2) {
+                vst1_f32(out_p, vdup_n_f32(amp_ * gain * buf[i]));
             }
         }
     }
@@ -92,15 +93,19 @@ public:
     inline void setParameter(uint8_t index, int32_t value) {
         p_[index] = value;
         switch (index) {
-        case Note:
+        case Note:    // 0..127
             pitch_ = value << 7;
             break;
-        case Shape:
+        case Shape:   // 0..46
             osc_.set_shape(static_cast<braids::MacroOscillatorShape>(value));
             break;
-        case Param1:
+        case Param1:  // -256..255
         case Param2:
             osc_.set_parameters((256 + p_[Param1]) << 6, 256 + (p_[Param2]) << 6);
+            break;
+        case Attack:
+        case Decay:
+            envelope_.Update(p_[Attack], p_[Decay]);
             break;
         default:
             break;
@@ -150,6 +155,7 @@ public:
         amp_ = 1. / 127 * velocity;
         gate_ += 1;
         osc_.Strike();
+        envelope_.Trigger(braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
     }
 
     inline void GateOff() {
@@ -185,6 +191,7 @@ private:
 
     int32_t p_[24];
     braids::MacroOscillator osc_;
+    braids::Envelope envelope_;
 
     int16_t pitch_;
     float amp_;

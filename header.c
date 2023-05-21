@@ -19,7 +19,7 @@ const __unit_header unit_header_t unit_header = {
     .version = 0x00010000U, // major.minor.patch (major<<16 minor<<8 patch).
     .name = "Braids4DL",
     .num_presets = 0,       // Number of internal presets this unit has
-    .num_params = 4,        // Number of parameters for this unit, max 24
+    .num_params = 6,        // Number of parameters for this unit, max 24
     .params = {
         // Format: min, max, center, default, type, fractional, frac. type, <reserved>, name
         // See common/runtime.h for type enum and unit_param_t structure
@@ -31,8 +31,8 @@ const __unit_header unit_header_t unit_header = {
         {-256, 255, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Color"}},
 
         // Page 2
-        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
-        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
+        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack"}},
+        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
 
