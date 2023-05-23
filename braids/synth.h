@@ -28,6 +28,8 @@ enum Params {
     Param2,
     Attack,
     Decay,
+    AD_Timbre,
+    AD_Color,
 };
 
 inline float note2freq(float note) {
@@ -67,25 +69,35 @@ public:
 
     fast_inline void Render(float * out, size_t frames) {
         float * __restrict out_p = out;
-        const float * out_e = out_p + (frames << 1);
-        const int gate = (gate_ > 0);
         const int bufsize = 24; // size of temp_buffer in macro_oscillator.h
 
         osc_.set_pitch(pitch_);
-        size_t frames_next = frames;
-        int16_t buf[bufsize];
+
+        int16_t buf[bufsize] = {};
         const uint8_t sync[bufsize] = {};
-        std::memset(buf, 0, sizeof(buf));
+        for(uint32_t p = 0; p < frames; p += bufsize) {
+            uint32_t env = envelope_.Render();
 
-        for(int p = 0; p < frames; p += bufsize) {
-            float env = 1.f / 65536 * envelope_.Render();
+            // Set timbre and color: parameter value + internal modulation.
+            int32_t timbre = timbre_;
+            timbre += env * p_[AD_Timbre] >> 5;
+            CONSTRAIN(timbre, 0, 32767);
+            int32_t color = color_;
+            color += env * p_[AD_Color] >> 5;
+            CONSTRAIN(color, 0, 32767);
+            osc_.set_parameters(timbre, color);
+
             size_t r_size = (bufsize < (frames - p)) ? bufsize : frames - p;
-
             osc_.Render(sync, buf, r_size);
 
-            float gain = env / 32768;
-            for(int i = 0; i < r_size ; i++, out_p += 2) {
-                vst1_f32(out_p, vdup_n_f32(amp_ * gain * buf[i]));
+            // Copy to the buffer with sample rate and bit reduction applied.
+            int32_t gain = env;
+            int16_t sample = 0;
+            for(uint32_t i = 0; i < r_size ; i++, out_p += 2) {
+                sample = buf[i];
+                sample = sample * gain_lp_ >> 16;
+                gain_lp_ += (gain - gain_lp_) >> 4;
+                vst1_f32(out_p, vdup_n_f32(amp_ * sample / 32768.f));
             }
         }
     }
@@ -100,8 +112,12 @@ public:
             osc_.set_shape(static_cast<braids::MacroOscillatorShape>(value));
             break;
         case Param1:  // -256..255
+            // timbre and color must be 0..32767
+            timbre_ = (value + 256) << 6;
+            break;
         case Param2:
-            osc_.set_parameters((256 + p_[Param1]) << 6, 256 + (p_[Param2]) << 6);
+            color_ = (value + 256) << 6;
+            break;
             break;
         case Attack:
         case Decay:
@@ -194,8 +210,12 @@ private:
     braids::Envelope envelope_;
 
     int16_t pitch_;
+    int16_t timbre_;
+    int16_t color_;
     float amp_;
     uint32_t gate_;
+
+    uint16_t gain_lp_;
 
     /* Private Methods. */
     /* Constants. */
@@ -248,5 +268,4 @@ private:
         "PRTC",
         "QPSK",
     };
-
 };
