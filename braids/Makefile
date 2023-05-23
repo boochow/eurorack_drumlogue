@@ -8,10 +8,10 @@ MKFILE_PATH := $(realpath $(lastword $(MAKEFILE_LIST)))
 PROJECT_ROOT ?= $(dir $(MKFILE_PATH))
 
 # Common includes
-COMMON_INC_PATH ?= $(realpath $(PROJECT_ROOT)/../common/)
+COMMON_INC_PATH ?= $(realpath $(PROJECT_ROOT)/../../common/)
 
 # Common sources
-COMMON_SRC_PATH ?= $(realpath $(PROJECT_ROOT)/../common/)
+COMMON_SRC_PATH ?= $(realpath $(PROJECT_ROOT)/../../common/)
 
 # Installation directory
 INSTALLDIR ?= $(PROJECT_ROOT)
