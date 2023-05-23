@@ -32,7 +32,7 @@ const __unit_header unit_header_t unit_header = {
 
         // Page 2
         {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack"}},
-        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
+        {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
 
