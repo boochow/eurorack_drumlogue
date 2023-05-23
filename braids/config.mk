@@ -2,7 +2,7 @@
 # Project Configuration
 #
 
-PROJECT := braids4dl
+PROJECT := macroosc1
 PROJECT_TYPE := synth
 
 ##############################################################################
