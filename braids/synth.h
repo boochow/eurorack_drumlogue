@@ -30,6 +30,7 @@ enum Params {
     Decay,
     AD_Timbre,
     AD_Color,
+    Resolution,
 };
 
 inline float note2freq(float note) {
@@ -37,6 +38,16 @@ inline float note2freq(float note) {
 }
 
 const float x7fff_recipf = 1.f / 32767;
+
+const uint16_t bit_reduction_masks[] = {
+    0xc000,
+    0xe000,
+    0xf000,
+    0xf800,
+    0xff00,
+    0xfff0,
+    0xffff
+};
 
 class Synth {
 public:
@@ -75,6 +86,7 @@ public:
 
         int16_t buf[bufsize] = {};
         const uint8_t sync[bufsize] = {};
+        uint16_t bit_mask = bit_reduction_masks[p_[Resolution]];
         for(uint32_t p = 0; p < frames; p += bufsize) {
             uint32_t env = envelope_.Render();
 
@@ -94,7 +106,7 @@ public:
             int32_t gain = env;
             int16_t sample = 0;
             for(uint32_t i = 0; i < r_size ; i++, out_p += 2) {
-                sample = buf[i];
+                sample = buf[i] & bit_mask;
                 sample = sample * gain_lp_ >> 16;
                 gain_lp_ += (gain - gain_lp_) >> 4;
                 vst1_f32(out_p, vdup_n_f32(amp_ * sample / 32768.f));
@@ -141,6 +153,14 @@ public:
             } else {
                 return nullptr;
             }
+
+        case Resolution:
+            if (value < 7) {
+                return BitsStr[value];
+            } else {
+                return nullptr;
+            }
+
         default:
             break;
         }
@@ -267,5 +287,15 @@ private:
         "CLOU",
         "PRTC",
         "QPSK",
+    };
+
+    const char *BitsStr[7] = {
+        " 2",
+        " 3",
+        " 4",
+        " 6",
+        " 8",
+        "12",
+        "16",
     };
 };
