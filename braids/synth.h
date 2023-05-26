@@ -2,10 +2,7 @@
 /*
  *  File: synth.h
  *
- *  Dummy Synth Class.
- *
- *
- *  2021-2022 (c) Korg
+ *  synth unit for braids
  *
  */
 
