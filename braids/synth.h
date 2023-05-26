@@ -11,12 +11,18 @@
 #include <cstdint>
 #include <cmath>
 
+#include <algorithm>
+
 #include <arm_neon.h>
 
 #include "unit.h"  // Note: Include common definitions for all units
 
+#include "stmlib/utils/dsp.h"
 #include "braids/envelope.h"
 #include "braids/macro_oscillator.h"
+#include "braids/signature_waveshaper.h"
+
+using namespace stmlib;
 
 enum Params {
     Note = 0,
@@ -28,6 +34,8 @@ enum Params {
     AD_Timbre,
     AD_Color,
     Resolution,
+    SampleRate,
+    Signature,
 };
 
 inline float note2freq(float note) {
@@ -46,6 +54,8 @@ const uint16_t bit_reduction_masks[] = {
     0xffff
 };
 
+const uint16_t decimation_factors[] = { 12, 6, 3, 2, 1 };
+
 class Synth {
 public:
     Synth(void) {}
@@ -61,6 +71,7 @@ public:
         std::memset(&osc_, 0, sizeof(osc_));
         osc_.Init();
         envelope_.Init();
+        ws_.Init(0x42636877U); // in the original src, MPU's unique id is used 
 
         return k_unit_err_none;
     }
@@ -83,7 +94,10 @@ public:
 
         int16_t buf[bufsize] = {};
         const uint8_t sync[bufsize] = {};
+        size_t decimation_factor = decimation_factors[p_[SampleRate]];
         uint16_t bit_mask = bit_reduction_masks[p_[Resolution]];
+        uint16_t signature = p_[Signature] * p_[Signature] * 4095;
+        uint32_t n = 0;
         for(uint32_t p = 0; p < frames; p += bufsize) {
             uint32_t env = envelope_.Render();
 
@@ -101,12 +115,15 @@ public:
 
             // Copy to the buffer with sample rate and bit reduction applied.
             int32_t gain = env;
-            int16_t sample = 0;
-            for(uint32_t i = 0; i < r_size ; i++, out_p += 2) {
-                sample = buf[i] & bit_mask;
-                sample = sample * gain_lp_ >> 16;
+            int16_t current_sample = 0;
+            for(uint32_t i = 0; i < r_size ; i++, n++, out_p += 2) {
+                if ((n % decimation_factor) == 0) {
+                    current_sample = buf[i] & bit_mask;
+                }
+                int16_t sample = current_sample * gain_lp_ >> 16;
                 gain_lp_ += (gain - gain_lp_) >> 4;
-                vst1_f32(out_p, vdup_n_f32(amp_ * sample / 32768.f));
+                int16_t warped = ws_.Transform(sample);
+                vst1_f32(out_p, vdup_n_f32(amp_ * Mix(sample, warped, signature) / 32768.f));
             }
         }
     }
@@ -119,6 +136,7 @@ public:
             break;
         case Shape:   // 0..46
             osc_.set_shape(static_cast<braids::MacroOscillatorShape>(value));
+            settings_.SetValue(braids::Setting::SETTING_OSCILLATOR_SHAPE, value);
             break;
         case Param1:  // -256..255
             // timbre and color must be 0..32767
@@ -154,6 +172,20 @@ public:
         case Resolution:
             if (value < 7) {
                 return BitsStr[value];
+            } else {
+                return nullptr;
+            }
+
+        case SampleRate:
+            if (value < 5) {
+                return RateStr[value];
+            } else {
+                return nullptr;
+            }
+
+        case Signature:
+            if (value < 5) {
+                return IntensityStr[value];
             } else {
                 return nullptr;
             }
@@ -225,6 +257,8 @@ private:
     int32_t p_[24];
     braids::MacroOscillator osc_;
     braids::Envelope envelope_;
+    braids::Settings settings_;
+    braids::SignatureWaveshaper ws_;
 
     int16_t pitch_;
     int16_t timbre_;
@@ -294,5 +328,21 @@ private:
         " 8",
         "12",
         "16",
+    };
+
+    const char *RateStr[5] = {
+        " 4K",
+        " 8K",
+        "16K",
+        "24K",
+        "48K",
+    };
+
+    const char *IntensityStr[5] = {
+        "OFF ",
+        "   1",
+        "   2",
+        "   3",
+        "FULL"
     };
 };
