@@ -21,6 +21,7 @@
 #include "braids/envelope.h"
 #include "braids/macro_oscillator.h"
 #include "braids/signature_waveshaper.h"
+#include "braids/vco_jitter_source.h"
 
 using namespace stmlib;
 
@@ -37,6 +38,10 @@ enum Params {
     SampleRate,
     Signature,
     AD_VCA,
+    Octave,
+    Pitch,
+    VCO_Flatten,
+    VCO_Drift,
 };
 
 inline float note2freq(float note) {
@@ -73,6 +78,7 @@ public:
         osc_.Init();
         envelope_.Init();
         ws_.Init(0x42636877U); // in the original src, MPU's unique id is used 
+        jitter_source_.Init();
 
         return k_unit_err_none;
     }
@@ -90,8 +96,6 @@ public:
     fast_inline void Render(float * out, size_t frames) {
         float * __restrict out_p = out;
         const int bufsize = 24; // size of temp_buffer in macro_oscillator.h
-
-        osc_.set_pitch(pitch_);
 
         int16_t buf[bufsize] = {};
         const uint8_t sync[bufsize] = {};
@@ -111,6 +115,12 @@ public:
             color += env * p_[AD_Color] >> 5;
             CONSTRAIN(color, 0, 32767);
             osc_.set_parameters(timbre, color);
+
+            int32_t pitch = pitch_;
+            pitch += jitter_source_.Render(p_[VCO_Drift]);
+            pitch += p_[Pitch] + p_[Octave] * 12 * 128;
+
+            osc_.set_pitch(pitch);
 
             size_t r_size = (bufsize < (frames - p)) ? bufsize : frames - p;
             osc_.Render(sync, buf, r_size);
@@ -193,6 +203,20 @@ public:
                 return nullptr;
             }
 
+        case VCO_Flatten:
+            if (value < 2) {
+                return OffOnStr[value];
+            } else {
+                return nullptr;
+            }
+
+        case VCO_Drift:
+            if (value < 5) {
+                return IntensityStr[value];
+            } else {
+                return nullptr;
+            }
+
         default:
             break;
         }
@@ -262,6 +286,7 @@ private:
     braids::Envelope envelope_;
     braids::Settings settings_;
     braids::SignatureWaveshaper ws_;
+    braids::VcoJitterSource jitter_source_;
 
     int16_t pitch_;
     int16_t timbre_;
