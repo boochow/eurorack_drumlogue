@@ -54,7 +54,7 @@ const uint16_t bit_reduction_masks[] = {
     0xffff
 };
 
-const uint16_t decimation_factors[] = { 12, 6, 3, 2, 1 };
+const uint16_t decimation_factors[] = { 12, 8, 6, 3, 2, 1 };
 
 class Synth {
 public:
@@ -331,8 +331,9 @@ private:
         "16",
     };
 
-    const char *RateStr[5] = {
+    const char *RateStr[6] = {
         " 4K",
+        " 6K",
         " 8K",
         "16K",
         "24K",

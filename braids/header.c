@@ -38,7 +38,7 @@ const __unit_header unit_header_t unit_header = {
 
         // Page 3
         {0, 6, 0, 6, k_unit_param_type_strings, 0, 0, 0, {"Bits"}},
-        {0, 4, 0, 4, k_unit_param_type_strings, 0, 0, 0, {"Rate"}},
+        {0, 5, 0, 5, k_unit_param_type_strings, 0, 0, 0, {"Rate"}},
         {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Sign."}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
 
