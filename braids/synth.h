@@ -36,6 +36,7 @@ enum Params {
     Resolution,
     SampleRate,
     Signature,
+    AD_VCA,
 };
 
 inline float note2freq(float note) {
@@ -115,7 +116,8 @@ public:
             osc_.Render(sync, buf, r_size);
 
             // Copy to the buffer with sample rate and bit reduction applied.
-            int32_t gain = env;
+            int32_t gain = p_[AD_VCA] * env >> 4;
+            gain += (15 - p_[AD_VCA]) * (gate_ > 0) << 11;
             for(uint32_t i = 0; i < r_size ; i++, n++, out_p += 2) {
                 if ((n % decimation_factor) == 0) {
                     current_sample = buf[i] & bit_mask;
@@ -339,6 +341,8 @@ private:
         "24K",
         "48K",
     };
+
+    const char* const OffOnStr[2] = { "OFF ", "ON " };
 
     const char *IntensityStr[5] = {
         "OFF ",
