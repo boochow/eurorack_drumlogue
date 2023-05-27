@@ -178,7 +178,7 @@ public:
             }
 
         case SampleRate:
-            if (value < 5) {
+            if (value < 6) {
                 return RateStr[value];
             } else {
                 return nullptr;
