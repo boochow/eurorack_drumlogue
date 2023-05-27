@@ -42,6 +42,7 @@ enum Params {
     Pitch,
     VCO_Flatten,
     VCO_Drift,
+    AD_FM,
 };
 
 inline float note2freq(float note) {
@@ -119,6 +120,7 @@ public:
             int32_t pitch = pitch_;
             pitch += jitter_source_.Render(p_[VCO_Drift]);
             pitch += p_[Pitch] + p_[Octave] * 12 * 128;
+            pitch += env * p_[AD_FM] >> 7;
 
             osc_.set_pitch(pitch);
 
@@ -211,6 +213,7 @@ public:
             }
 
         case VCO_Drift:
+        case AD_FM:
             if (value < 5) {
                 return IntensityStr[value];
             } else {
