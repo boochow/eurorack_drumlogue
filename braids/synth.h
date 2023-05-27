@@ -97,7 +97,8 @@ public:
         size_t decimation_factor = decimation_factors[p_[SampleRate]];
         uint16_t bit_mask = bit_reduction_masks[p_[Resolution]];
         uint16_t signature = p_[Signature] * p_[Signature] * 4095;
-        uint32_t n = 0;
+        static uint32_t n = 0;
+        static int16_t current_sample = 0;
         for(uint32_t p = 0; p < frames; p += bufsize) {
             uint32_t env = envelope_.Render();
 
@@ -115,7 +116,6 @@ public:
 
             // Copy to the buffer with sample rate and bit reduction applied.
             int32_t gain = env;
-            int16_t current_sample = 0;
             for(uint32_t i = 0; i < r_size ; i++, n++, out_p += 2) {
                 if ((n % decimation_factor) == 0) {
                     current_sample = buf[i] & bit_mask;
@@ -126,6 +126,7 @@ public:
                 vst1_f32(out_p, vdup_n_f32(amp_ * Mix(sample, warped, signature) / 32768.f));
             }
         }
+        n = n % bufsize;
     }
 
     inline void setParameter(uint8_t index, int32_t value) {
