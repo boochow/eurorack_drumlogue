@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cmath>
+#include <cstdio>
 
 #include <algorithm>
 
@@ -234,6 +235,12 @@ public:
             break;
         }
         return nullptr;
+    }
+
+    inline void SetTempo(uint32_t tempo) {
+        // const float t = (tempo >> 16) + (tempo & 0xFFFF) /
+        // static_cast<float>(0x10000);
+        (void) tempo;
     }
 
     inline void NoteOn(uint8_t note, uint8_t velocity) {
