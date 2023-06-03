@@ -26,6 +26,12 @@
 
 using namespace stmlib;
 
+constexpr size_t PRESET_COUNT = 2;
+const char *PresetNameStr[PRESET_COUNT] = {
+    "Init",
+    "Init",
+};
+
 enum Params {
     Note = 0,
     Shape,
@@ -277,21 +283,33 @@ public:
         (void)aftertouch;
     }
 
-    inline void LoadPreset(uint8_t idx) { (void)idx; }
+    inline void LoadPreset(uint8_t idx) {
+	if (idx < PRESET_COUNT) {
+	    preset_ = idx;
+	    for(int i = 0 ; i < 24 ; i++) {
+		setParameter(i, Presets[idx][i]);
+	    }
+	}
+    }
 
-    inline uint8_t getPresetIndex() const { return 0; }
-
-    /* Static Members. */
+    inline uint8_t getPresetIndex() const {
+	return preset_;
+    }
 
     static inline const char * getPresetName(uint8_t idx) {
-        (void)idx;
-        return nullptr;
+	if (idx < PRESET_COUNT) {
+	    return PresetNameStr[idx];
+	} else {
+	    return nullptr;
+	}
     }
 
 private:
     std::atomic_uint_fast32_t flags_;
 
     int32_t p_[24];
+    uint8_t preset_;
+
     braids::MacroOscillator osc_;
     braids::Envelope envelope_;
     braids::Settings settings_;
@@ -318,22 +336,22 @@ private:
         "Saw Sub",
         "SqrSync",
         "SawSync",
-        "3 x Saw",
-        "3 x Sqr",
-        "3 x Tri",
-        "3 x Sin",
+        "Saw x 3",
+        "Sqr x 3",
+        "Tri x 3",
+        "Sin x 3",
         "Ring",
-        "SawSwrm",
+        "SprSaws",
         "SawComb",
-        "TOY*",
-        "ZLowPF",
-        "ZPeakF",
-        "ZBandPF",
-        "ZHighPF",
-        "Vosim",
+        "Toy*",
+        "Phz LPF",
+        "Phz PkF",
+        "Phz BPF",
+        "Phz HPF",
+        "Vo sim",
         "Vowel",
-        "VwelFOF",
-        "Harmncs",
+        "Vwl FOF",
+        "AddHarm",
         "FM  ",
         "FB FM",
         "Chaotic",
@@ -349,7 +367,7 @@ private:
         "WaveTbl",
         "WaveMap",
         "WavLine",
-        "4xWvTbl",
+        "WvTblx4",
         "FltNois",
         "Twin Q",
         "Clocked",
@@ -385,5 +403,29 @@ private:
         "   2",
         "   3",
         "FULL"
+    };
+
+    const int16_t Presets[PRESET_COUNT][24] = {
+	// Note, Shape, Timbre, Color,
+        // Attack, Decay, EG=>Timbre, EG=>Color,
+        // Bits, Rate, Sign, EG=>VCA,
+        // Octave, Pitch, Flatten, Drift,
+        // EG=>FM,
+
+	// "Init"
+	{60, 0, 0, 0,
+	 0, 48, 0, 0,
+	 6, 5, 0, 15,
+	 0, 0, 0, 0,
+	 0, 0, 0, 0,
+	 0, 0, 0, 0},
+
+	// "Init"
+	{60, 0, 0, 0,
+	 0, 48, 0, 0,
+	 6, 5, 0, 15,
+	 0, 0, 0, 0,
+	 0, 0, 0, 0,
+	 0, 0, 0, 0},
     };
 };
