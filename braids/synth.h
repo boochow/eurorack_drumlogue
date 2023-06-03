@@ -23,6 +23,7 @@
 #include "braids/macro_oscillator.h"
 #include "braids/signature_waveshaper.h"
 #include "braids/vco_jitter_source.h"
+#include "linenvelope.h"
 
 using namespace stmlib;
 
@@ -37,23 +38,29 @@ enum Params {
     Shape,
     Param1,
     Param2,
-    Attack,
-    Decay,
-    AD_Timbre,
-    AD_Color,
-    Resolution,
-    SampleRate,
-    Signature,
-    AD_VCA,
     Octave,
     Pitch,
+    Resolution,
+    SampleRate,
+    Attack,
+    Decay,
+    Attack2,
+    Decay2,
+    AD_Timbre,
+    AD_Color,
+    AD_VCA,
+    AD_FM,
+    Signature,
     VCO_Flatten,
     VCO_Drift,
-    AD_FM,
 };
 
 inline float note2freq(float note) {
     return (440.f / 32) * powf(2, (note - 9.0) / 12);
+}
+
+inline int32_t clipminmax(int32_t a, int32_t x, int32_t b) {
+    return x > b ? b : (x < a ? a : x);
 }
 
 const float x7fff_recipf = 1.f / 32767;
@@ -85,6 +92,7 @@ public:
         std::memset(&osc_, 0, sizeof(osc_));
         osc_.Init();
         envelope_.Init();
+        envelope2_.Init();
         ws_.Init(0x42636877U); // in the original src, MPU's unique id is used 
         jitter_source_.Init();
 
@@ -114,29 +122,45 @@ public:
         static int16_t current_sample = 0;
         for(uint32_t p = 0; p < frames; p += bufsize) {
             uint32_t env = envelope_.Render();
+            uint32_t env2 = envelope2_.Render();
+            int32_t env1int;
+            int32_t env2int;
 
             // Set timbre and color: parameter value + internal modulation.
             int32_t timbre = timbre_;
-            timbre += env * p_[AD_Timbre] >> 5;
+            timbre += (env * clipminmax(0, p_[AD_Timbre], 15) >> 5)
+                + (env2 * (-clipminmax(-15, p_[AD_Timbre], 0)) >> 5);
             CONSTRAIN(timbre, 0, 32767);
             int32_t color = color_;
-            color += env * p_[AD_Color] >> 5;
+            color += (env * clipminmax(0, p_[AD_Color], 15) >> 5)
+                + (env2 * (-clipminmax(-15, p_[AD_Color], 0)) >> 5);
             CONSTRAIN(color, 0, 32767);
             osc_.set_parameters(timbre, color);
 
             int32_t pitch = pitch_;
             pitch += jitter_source_.Render(p_[VCO_Drift]);
             pitch += p_[Pitch] + p_[Octave] * 12 * 128;
-            pitch += env * p_[AD_FM] >> 7;
+            pitch += (env * clipminmax(0, p_[AD_FM], 15) >> 7)
+                + (env2 * (-clipminmax(-15, p_[AD_FM], 0)) >> 7);
+
+            if (pitch > 16383) {
+                pitch = 16383;
+            } else if (pitch < 0) {
+                pitch = 0;
+            }
 
             osc_.set_pitch(pitch);
 
             size_t r_size = (bufsize < (frames - p)) ? bufsize : frames - p;
             osc_.Render(sync, buf, r_size);
 
+            env1int = p_[AD_VCA];
+            CONSTRAIN(env1int, 0, 15);
+            env2int = -p_[AD_VCA];
+            CONSTRAIN(env2int, 0, 15);
+            int32_t gain = (env * env1int >> 4) + (env2 * env2int >> 4);
+            gain += (15 - env1int - env2int) * (gate_ > 0) << 11;
             // Copy to the buffer with sample rate and bit reduction applied.
-            int32_t gain = p_[AD_VCA] * env >> 4;
-            gain += (15 - p_[AD_VCA]) * (gate_ > 0) << 11;
             for(uint32_t i = 0; i < r_size ; i++, n++, out_p += 2) {
                 if ((n % decimation_factor) == 0) {
                     current_sample = buf[i] & bit_mask;
@@ -154,23 +178,31 @@ public:
         p_[index] = value;
         switch (index) {
         case Note:    // 0..127
+            CONSTRAIN(value, 0, 127);
             pitch_ = value << 7;
             break;
         case Shape:   // 0..46
+            CONSTRAIN(value, 0, 46);
             osc_.set_shape(static_cast<braids::MacroOscillatorShape>(value));
             settings_.SetValue(braids::Setting::SETTING_OSCILLATOR_SHAPE, value);
             break;
         case Param1:  // -256..255
             // timbre and color must be 0..32767
+            CONSTRAIN(value, -2560, 256);
             timbre_ = (value + 256) << 6;
             break;
         case Param2:
+            CONSTRAIN(value, -2560, 256);
             color_ = (value + 256) << 6;
             break;
             break;
         case Attack:
         case Decay:
             envelope_.Update(p_[Attack], p_[Decay]);
+            break;
+        case Attack2:
+        case Decay2:
+            envelope2_.Update(p_[Attack2], p_[Decay2]);
             break;
         default:
             break;
@@ -264,6 +296,7 @@ public:
         gate_ += 1;
         osc_.Strike();
         envelope_.Trigger(braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
+        envelope2_.Trigger(braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
     }
 
     inline void GateOff() {
@@ -312,6 +345,7 @@ private:
 
     braids::MacroOscillator osc_;
     braids::Envelope envelope_;
+    braids::LinEnvelope envelope2_;
     braids::Settings settings_;
     braids::SignatureWaveshaper ws_;
     braids::VcoJitterSource jitter_source_;
@@ -414,9 +448,9 @@ private:
 
 	// "Init"
 	{60, 0, 0, 0,
-	 0, 48, 0, 0,
-	 6, 5, 0, 15,
-	 0, 0, 0, 0,
+	 0, 0, 6, 5,
+	 0, 45, 0, 45,
+	 0, 0, 15, 0,
 	 0, 0, 0, 0,
 	 0, 0, 0, 0},
 

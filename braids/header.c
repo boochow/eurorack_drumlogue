@@ -19,7 +19,7 @@ const __unit_header unit_header_t unit_header = {
     .version = 0x00010000U, // major.minor.patch (major<<16 minor<<8 patch).
     .name = "MacroOsc1",
     .num_presets = 1,       // Number of internal presets this unit has
-    .num_params = 17,        // Number of parameters for this unit, max 24
+    .num_params = 24,        // Number of parameters for this unit, max 24
     .params = {
         // Format: min, max, center, default, type, fractional, frac. type, <reserved>, name
         // See common/runtime.h for type enum and unit_param_t structure
@@ -31,31 +31,31 @@ const __unit_header unit_header_t unit_header = {
         {-256, 255, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Color"}},
 
         // Page 2
-        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack"}},
-        {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
-        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {">Timbre"}},
-        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {">Color"}},
-
-        // Page 3
-        {0, 6, 0, 6, k_unit_param_type_strings, 0, 0, 0, {"Bits"}},
-        {0, 5, 0, 5, k_unit_param_type_strings, 0, 0, 0, {"Rate"}},
-        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Sign."}},
-        {0, 15, 0, 15, k_unit_param_type_none, 0, 0, 0, {">VCA"}},
-
-        // Page 4
         {-2, 2, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Octave"}},
         {-127, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Pitch"}},
-        {0, 1, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Flatten"}},
-        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Drift"}},
+        {0, 6, 0, 6, k_unit_param_type_strings, 0, 0, 0, {"Bits"}},
+        {0, 5, 0, 5, k_unit_param_type_strings, 0, 0, 0, {"Rate"}},
+
+        // Page 3
+        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack1"}},
+        {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay1"}},
+        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack2"}},
+        {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay2"}},
+
+        // Page 4
+        {-15, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {">Timbre"}},
+        {-15, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {">Color"}},
+        {-15, 15, 0, 15, k_unit_param_type_none, 0, 0, 0, {">VCA"}},
+        {-15, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {">FM"}},
 
         // Page 5
-        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {">FM"}},
+        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
 
         // Page 6
-        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
-        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
-        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
+        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Sign."}},
+        {0, 1, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Flatten"}},
+        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Drift"}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}}}};
