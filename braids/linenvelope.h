@@ -56,7 +56,7 @@ namespace braids {
                 Trigger(static_cast<EnvelopeSegment>(segment_ + 1));
             }
             if (increment_[segment_]) {
-                if (curve_ = ENVELOPE_LINEAR) {
+                if (curve_ == ENVELOPE_LINEAR) {
                     value_ = Mix(a_, b_, phase_ >> 16);
                 } else {
                     value_ = Mix(a_, b_, Interpolate824(lut_env_expo, phase_));
