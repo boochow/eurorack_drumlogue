@@ -56,6 +56,8 @@ enum Params {
     ModIntFM,
     ModSrcShape,
     ModIntShape,
+    EG1Type,
+    EG2Type,
     Signature,
     VCO_Flatten,
     VCO_Drift,
@@ -68,6 +70,21 @@ enum ModulationSrc {
     SRC_MUL,
     SRC_DIF12,
     SRC_DIF21,
+};
+
+enum EGType {
+    EG_EXP_1SHOT_ALWAYS,
+    EG_EXP_LOOP_ALWAYS,
+    EG_EXP_LOOP_GATE,
+    EG_EXP_LOOP_NOTGATE,
+    EG_EXP_LOOP_ATTACK,
+    EG_EXP_LOOP_DECAY,
+    EG_LIN_1SHOT_ALWAYS,
+    EG_LIN_LOOP_ALWAYS,
+    EG_LIN_LOOP_GATE,
+    EG_LIN_LOOP_NOTGATE,
+    EG_LIN_LOOP_ATTACK,
+    EG_LIN_LOOP_DECAY,
 };
 
 inline float note2freq(float note) {
@@ -108,8 +125,6 @@ public:
         osc_.Init();
         envelope_.Init();
         envelope2_.Init();
-        envelope2_.SetCurve(braids::EnvelopeCurve::ENVELOPE_LINEAR);
-        envelope2_.SetLoop(1);
         ws_.Init(0x42636877U); // in the original src, MPU's unique id is used 
         jitter_source_.Init();
 
@@ -140,25 +155,28 @@ public:
         for(uint32_t p = 0; p < frames; p += bufsize) {
             uint32_t env = envelope_.Render();
             uint32_t env2 = envelope2_.Render();
+            uint32_t env1_val = getEgVal(p_[EG1Type], env, envelope2_.segment());
+            uint32_t env2_val = getEgVal(p_[EG2Type], env2, envelope_.segment());
+
             uint32_t env_val;
             uint32_t env_int;
 
             // Set timbre and color: parameter value + internal modulation.
             int32_t timbre = timbre_;
-            env_val = getModVal(p_[ModSrcTimbre], env, env2);
+            env_val = getModVal(p_[ModSrcTimbre], env1_val, env2_val);
             env_int = clipminmax(0, p_[ModIntTimbre], 15);
             timbre += env_val * env_int >> 5;
             CONSTRAIN(timbre, 0, 32767);
 
             int32_t color = color_;
-            env_val = getModVal(p_[ModSrcColor], env, env2);
+            env_val = getModVal(p_[ModSrcColor], env1_val, env2_val);
             env_int = clipminmax(0, p_[ModIntColor], 15);
             color += env_val * env_int >> 5;
             CONSTRAIN(color, 0, 32767);
             osc_.set_parameters(timbre, color);
 
             int32_t pitch = pitch_;
-            env_val = getModVal(p_[ModSrcFM], env, env2);
+            env_val = getModVal(p_[ModSrcFM], env1_val, env2_val);
             env_int = clipminmax(0, p_[ModIntFM], 15);
             pitch += jitter_source_.Render(p_[VCO_Drift]);
             pitch += p_[Pitch] + p_[Octave] * 12 * 128;
@@ -175,9 +193,9 @@ public:
             size_t r_size = (bufsize < (frames - p)) ? bufsize : frames - p;
             osc_.Render(sync, buf, r_size);
 
-            env_val = getModVal(p_[ModSrcVCA], env, env2);
+            env_val = getModVal(p_[ModSrcVCA], env1_val, env2_val);
             int32_t gain = (env_val * p_[ModIntVCA] >> 4);
-            gain += (15 - p_[ModIntVCA]) * (gate_ > 0) << 11;
+//            gain += (15 - p_[ModIntVCA]) * (gate > 0) << 11;
             
             // Copy to the buffer with sample rate and bit reduction applied.
             for(uint32_t i = 0; i < r_size ; i++, n++, out_p += 2) {
@@ -221,6 +239,14 @@ public:
         case Attack2:
         case Decay2:
             envelope2_.Update(p_[Attack2], p_[Decay2]);
+            break;
+        case EG1Type:
+            envelope_.SetCurve(getCurve(static_cast<EGType>(value)));
+            envelope_.SetLoop(getLoop(static_cast<EGType>(value)));
+            break;
+        case EG2Type:
+            envelope2_.SetCurve(getCurve(static_cast<EGType>(value)));
+            envelope2_.SetLoop(getLoop(static_cast<EGType>(value)));
             break;
         default:
             break;
@@ -273,6 +299,25 @@ public:
         case ModIntFM:
             if (value < 5) {
                 return IntensityStr[value];
+            } else {
+                return nullptr;
+            }
+
+        case ModSrcTimbre:
+        case ModSrcColor:
+        case ModSrcVCA:
+        case ModSrcFM:
+        case ModSrcShape:
+            if (value < 6) {
+                return ModSrcStr[value];
+            } else {
+                return nullptr;
+            }
+
+        case EG1Type:
+        case EG2Type:
+            if (value < 12) {
+                return EGTypeStr[value];
             } else {
                 return nullptr;
             }
@@ -383,13 +428,54 @@ private:
         CONSTRAIN(env_val, 0, 0xffff);
         return env_val;
     }
+
+    inline uint32_t getEgVal(int32_t type, uint32_t env, braids::EnvelopeSegment seg) {
+        int32_t env_val;
+        switch(type) {
+        case EG_EXP_LOOP_GATE:
+            env_val = env * (gate_ > 0);
+            break;
+        case EG_EXP_LOOP_NOTGATE:
+            env_val = env * (gate_ == 0);
+            break;
+        case EG_EXP_LOOP_ATTACK:
+            env_val = env * (seg == braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
+            break;
+        case EG_EXP_LOOP_DECAY:
+            env_val = env * (seg == braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
+            break;
+        case EG_EXP_1SHOT_ALWAYS:
+        case EG_EXP_LOOP_ALWAYS:
+        default:
+            env_val = env;
+            break;
+        }
+        return env_val;
+    }
+
+    inline braids::EnvelopeCurve getCurve(EGType type) {
+        if (type >= EG_LIN_1SHOT_ALWAYS) {
+            return braids::EnvelopeCurve::ENVELOPE_LINEAR;
+        } else {
+            return braids::EnvelopeCurve::ENVELOPE_EXP;
+        }
+    }
+
+    inline int16_t getLoop(EGType type) {
+        if ((type == EG_EXP_1SHOT_ALWAYS) || (type == EG_LIN_1SHOT_ALWAYS)) {
+            return 0;
+        } else {
+            return 1;
+        }
+    }
+
     std::atomic_uint_fast32_t flags_;
 
-    int32_t p_[24];
+    int32_t p_[27]; // 24 parameters + Signature, VCO_Flatten, VCO_Drift
     uint8_t preset_;
 
     braids::MacroOscillator osc_;
-    braids::Envelope envelope_;
+    braids::LinEnvelope envelope_;
     braids::LinEnvelope envelope2_;
     braids::SignatureWaveshaper ws_;
     braids::VcoJitterSource jitter_source_;
@@ -483,6 +569,30 @@ private:
         "FULL"
     };
 
+    const char *ModSrcStr[6] ={
+        "  EG1",
+        "  EG2",
+        "EG1+EG2",
+        "EG1*EG2",
+        "EG1-EG2",
+        "EG2-EG1",
+    };
+
+    const char *EGTypeStr[12] ={
+        "E/1SHOT",
+        "E/LOOP",
+        "E/L/G",
+        "E/L/-G",
+        "E/L/ATK",
+        "E/L/DCY",
+        "L/1SHOT",
+        "L/LOOP",
+        "L/L/G",
+        "L/L/-G",
+        "L/L/ATK",
+        "L/L/DCY",
+    };
+
     const int16_t Presets[PRESET_COUNT][24] = {
 	// Note, Shape, Timbre, Color,
         // Attack, Decay, EG=>Timbre, EG=>Color,
@@ -493,17 +603,17 @@ private:
 	// "Init"
 	{60, 0, 0, 0,
 	 0, 0, 6, 5,
-	 0, 45, 0, 45,
-	 0, 0, 0, 0,
-	 0, 15, 0, 0,
-	 0, 0, 0, 0},
+	 0, 45, 30, 45,
+	 SRC_EG1, 0, SRC_EG1, 0,
+	 SRC_EG1, 15, SRC_EG1, 0,
+	 SRC_EG1, 0, EG_EXP_1SHOT_ALWAYS, EG_EXP_LOOP_ALWAYS},
 
 	// "Init"
 	{60, 0, 0, 0,
-	 0, 48, 0, 0,
-	 6, 5, 0, 15,
-	 0, 0, 0, 0,
-	 0, 0, 0, 0,
-	 0, 0, 0, 0},
+	 0, 0, 6, 5,
+	 0, 45, 30, 45,
+	 SRC_EG1, 0, SRC_EG1, 0,
+	 SRC_EG1, 15, SRC_EG1, 0,
+	 SRC_EG1, 0, EG_EXP_1SHOT_ALWAYS, EG_EXP_LOOP_ALWAYS},
     };
 };
