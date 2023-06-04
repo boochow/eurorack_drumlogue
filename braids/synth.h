@@ -184,7 +184,6 @@ public:
         case Shape:   // 0..46
             CONSTRAIN(value, 0, 46);
             osc_.set_shape(static_cast<braids::MacroOscillatorShape>(value));
-            settings_.SetValue(braids::Setting::SETTING_OSCILLATOR_SHAPE, value);
             break;
         case Param1:  // -256..255
             // timbre and color must be 0..32767
@@ -346,7 +345,6 @@ private:
     braids::MacroOscillator osc_;
     braids::Envelope envelope_;
     braids::LinEnvelope envelope2_;
-    braids::Settings settings_;
     braids::SignatureWaveshaper ws_;
     braids::VcoJitterSource jitter_source_;
 
