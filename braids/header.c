@@ -43,19 +43,19 @@ const __unit_header unit_header_t unit_header = {
         {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay2"}},
 
         // Page 4
-        {-15, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {">Timbre"}},
-        {-15, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {">Color"}},
-        {-15, 15, 0, 15, k_unit_param_type_none, 0, 0, 0, {">VCA"}},
-        {-15, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {">FM"}},
+        {0, 5, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Tmb Src"}},
+        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Tmb Int"}},
+        {0, 5, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Col Src"}},
+        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Col Int"}},
 
         // Page 5
-        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
-        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
-        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
-        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
+        {0, 5, 0, 0, k_unit_param_type_none, 0, 0, 0, {"VCA Src"}},
+        {0, 15, 0, 15, k_unit_param_type_none, 0, 0, 0, {"VCA Int"}},
+        {0, 5, 0, 0, k_unit_param_type_none, 0, 0, 0, {"VCA Src"}},
+        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"FM Int"}},
 
         // Page 6
-        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Sign."}},
-        {0, 1, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Flatten"}},
-        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Drift"}},
+        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
+        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
+        {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}},
         {0, 0, 0, 0, k_unit_param_type_none, 0, 0, 0, {""}}}};

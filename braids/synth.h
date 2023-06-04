@@ -46,13 +46,28 @@ enum Params {
     Decay,
     Attack2,
     Decay2,
-    AD_Timbre,
-    AD_Color,
-    AD_VCA,
-    AD_FM,
+    ModSrcTimbre,
+    ModIntTimbre,
+    ModSrcColor,
+    ModIntColor,
+    ModSrcVCA,
+    ModIntVCA,
+    ModSrcFM,
+    ModIntFM,
+    ModSrcShape,
+    ModIntShape,
     Signature,
     VCO_Flatten,
     VCO_Drift,
+};
+
+enum ModulationSrc {
+    SRC_EG1,
+    SRC_EG2,
+    SRC_SUM,
+    SRC_MUL,
+    SRC_DIF12,
+    SRC_DIF21,
 };
 
 inline float note2freq(float note) {
@@ -93,6 +108,8 @@ public:
         osc_.Init();
         envelope_.Init();
         envelope2_.Init();
+        envelope2_.SetCurve(braids::EnvelopeCurve::ENVELOPE_LINEAR);
+        envelope2_.SetLoop(1);
         ws_.Init(0x42636877U); // in the original src, MPU's unique id is used 
         jitter_source_.Init();
 
@@ -123,25 +140,29 @@ public:
         for(uint32_t p = 0; p < frames; p += bufsize) {
             uint32_t env = envelope_.Render();
             uint32_t env2 = envelope2_.Render();
-            int32_t env1int;
-            int32_t env2int;
+            uint32_t env_val;
+            uint32_t env_int;
 
             // Set timbre and color: parameter value + internal modulation.
             int32_t timbre = timbre_;
-            timbre += (env * clipminmax(0, p_[AD_Timbre], 15) >> 5)
-                + (env2 * (-clipminmax(-15, p_[AD_Timbre], 0)) >> 5);
+            env_val = getModVal(p_[ModSrcTimbre], env, env2);
+            env_int = clipminmax(0, p_[ModIntTimbre], 15);
+            timbre += env_val * env_int >> 5;
             CONSTRAIN(timbre, 0, 32767);
+
             int32_t color = color_;
-            color += (env * clipminmax(0, p_[AD_Color], 15) >> 5)
-                + (env2 * (-clipminmax(-15, p_[AD_Color], 0)) >> 5);
+            env_val = getModVal(p_[ModSrcColor], env, env2);
+            env_int = clipminmax(0, p_[ModIntColor], 15);
+            color += env_val * env_int >> 5;
             CONSTRAIN(color, 0, 32767);
             osc_.set_parameters(timbre, color);
 
             int32_t pitch = pitch_;
+            env_val = getModVal(p_[ModSrcFM], env, env2);
+            env_int = clipminmax(0, p_[ModIntFM], 15);
             pitch += jitter_source_.Render(p_[VCO_Drift]);
             pitch += p_[Pitch] + p_[Octave] * 12 * 128;
-            pitch += (env * clipminmax(0, p_[AD_FM], 15) >> 7)
-                + (env2 * (-clipminmax(-15, p_[AD_FM], 0)) >> 7);
+            pitch += env_val * env_int >> 7;
 
             if (pitch > 16383) {
                 pitch = 16383;
@@ -154,12 +175,10 @@ public:
             size_t r_size = (bufsize < (frames - p)) ? bufsize : frames - p;
             osc_.Render(sync, buf, r_size);
 
-            env1int = p_[AD_VCA];
-            CONSTRAIN(env1int, 0, 15);
-            env2int = -p_[AD_VCA];
-            CONSTRAIN(env2int, 0, 15);
-            int32_t gain = (env * env1int >> 4) + (env2 * env2int >> 4);
-            gain += (15 - env1int - env2int) * (gate_ > 0) << 11;
+            env_val = getModVal(p_[ModSrcVCA], env, env2);
+            int32_t gain = (env_val * p_[ModIntVCA] >> 4);
+            gain += (15 - p_[ModIntVCA]) * (gate_ > 0) << 11;
+            
             // Copy to the buffer with sample rate and bit reduction applied.
             for(uint32_t i = 0; i < r_size ; i++, n++, out_p += 2) {
                 if ((n % decimation_factor) == 0) {
@@ -251,7 +270,7 @@ public:
             }
 
         case VCO_Drift:
-        case AD_FM:
+        case ModIntFM:
             if (value < 5) {
                 return IntensityStr[value];
             } else {
@@ -337,6 +356,33 @@ public:
     }
 
 private:
+    inline uint32_t getModVal(int32_t src, uint32_t env, uint32_t env2) {
+        int32_t env_val;
+        switch(src) {
+        case SRC_EG1:
+            env_val = env;
+            break;
+        case SRC_EG2:
+            env_val = env2;
+            break;
+        case SRC_SUM:
+            env_val = (env + env2) / 2;
+            break;
+        case SRC_MUL:
+            env_val = (env * env2) >> 16;
+            break;
+        case SRC_DIF12:
+            env_val = env - env2;
+            break;
+        case SRC_DIF21:
+            env_val = env2 - env;
+            break;
+        default:
+            break;
+        }
+        CONSTRAIN(env_val, 0, 0xffff);
+        return env_val;
+    }
     std::atomic_uint_fast32_t flags_;
 
     int32_t p_[24];
@@ -448,8 +494,8 @@ private:
 	{60, 0, 0, 0,
 	 0, 0, 6, 5,
 	 0, 45, 0, 45,
-	 0, 0, 15, 0,
 	 0, 0, 0, 0,
+	 0, 15, 0, 0,
 	 0, 0, 0, 0},
 
 	// "Init"
