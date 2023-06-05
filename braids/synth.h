@@ -604,9 +604,9 @@ private:
 	{60, 0, 0, 0,
 	 0, 0, 6, 5,
 	 0, 45, 30, 45,
-	 SRC_EG1, 0, SRC_EG1, 0,
-	 SRC_EG1, 15, SRC_EG1, 0,
-	 SRC_EG1, 0, EG_EXP_1SHOT_ALWAYS, EG_EXP_LOOP_ALWAYS},
+	 EG_EXP_1SHOT_ALWAYS, EG_EXP_LOOP_ALWAYS, SRC_EG1, 15,
+         SRC_EG1, 0, SRC_EG1, 0,
+	 SRC_EG1, 0, SRC_EG1, 0},
 
 	// "Init"
 	{60, 0, 0, 0,
