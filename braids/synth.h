@@ -70,6 +70,9 @@ enum ModulationSrc {
     SRC_MUL,
     SRC_DIF12,
     SRC_DIF21,
+    SRC_DIF1MUL,
+    SRC_DIF2MUL,
+    MODSRCCOUNT
 };
 
 enum EGType {
@@ -85,6 +88,7 @@ enum EGType {
     EG_LIN_LOOP_NOTGATE,
     EG_LIN_LOOP_ATTACK,
     EG_LIN_LOOP_DECAY,
+    EGTYPECOUNT
 };
 
 inline float note2freq(float note) {
@@ -308,7 +312,7 @@ public:
         case ModSrcVCA:
         case ModSrcFM:
         case ModSrcShape:
-            if (value < 6) {
+            if (value < MODSRCCOUNT) {
                 return ModSrcStr[value];
             } else {
                 return nullptr;
@@ -316,7 +320,7 @@ public:
 
         case EG1Type:
         case EG2Type:
-            if (value < 12) {
+            if (value < EGTYPECOUNT) {
                 return EGTypeStr[value];
             } else {
                 return nullptr;
@@ -421,6 +425,12 @@ private:
             break;
         case SRC_DIF21:
             env_val = env2 - env;
+            break;
+        case SRC_DIF1MUL:
+            env_val = env - (env * env2 >> 16);
+            break;
+        case SRC_DIF2MUL:
+            env_val = env2 - (env * env2 >> 16);
             break;
         default:
             break;
@@ -575,13 +585,15 @@ private:
         "FULL"
     };
 
-    const char *ModSrcStr[6] ={
+    const char *ModSrcStr[8] ={
         "  EG1",
         "  EG2",
         "EG1+EG2",
         "EG1*EG2",
         "EG1-EG2",
         "EG2-EG1",
+        "1-1*2",
+        "2-1*2",
     };
 
     const char *EGTypeStr[12] ={
