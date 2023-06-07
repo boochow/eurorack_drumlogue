@@ -195,7 +195,7 @@ public:
 
             env_val = getModVal(p_[ModSrcVCA], env1_val, env2_val);
             int32_t gain = (env_val * p_[ModIntVCA] >> 4);
-//            gain += (15 - p_[ModIntVCA]) * (gate > 0) << 11;
+            gain += (15 - p_[ModIntVCA]) * (gate_ > 0) << 11;
             
             // Copy to the buffer with sample rate and bit reduction applied.
             for(uint32_t i = 0; i < r_size ; i++, n++, out_p += 2) {
