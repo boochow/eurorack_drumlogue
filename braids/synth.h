@@ -586,14 +586,14 @@ private:
     };
 
     const char *ModSrcStr[8] ={
-        "  EG1",
-        "  EG2",
-        "EG1+EG2",
-        "EG1*EG2",
-        "EG1-EG2",
-        "EG2-EG1",
-        "1-1*2",
-        "2-1*2",
+        " EG A",
+        " EG B",
+        " A + B",
+        " A * B",
+        " A - B",
+        " B - A",
+        "A - A*B",
+        "B - A*B",
     };
 
     const char *EGTypeStr[12] ={
