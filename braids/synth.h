@@ -440,30 +440,30 @@ private:
     }
 
     inline uint32_t getEgVal(int32_t type, uint32_t env, braids::EnvelopeSegment seg) {
-        uint32_t env_val;
+        uint32_t val;
         switch(type) {
         case EG_EXP_LOOP_GATE:
         case EG_LIN_LOOP_GATE:
-            env_val = env * (gate_ > 0);
+            val = env * (gate_ > 0);
             break;
         case EG_EXP_LOOP_NOTGATE:
         case EG_LIN_LOOP_NOTGATE:
-            env_val = env * (gate_ == 0);
+            val = env * (gate_ == 0);
             break;
         case EG_EXP_LOOP_ATTACK:
         case EG_LIN_LOOP_ATTACK:
-            env_val = env * (seg == braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
+            val = env * (seg == braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
             break;
         case EG_EXP_LOOP_DECAY:
         case EG_LIN_LOOP_DECAY:
-            env_val = env * (seg == braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
+            val = env * (seg == braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
             break;
         case EG_EXP_1SHOT_ALWAYS:
         case EG_LIN_1SHOT_ALWAYS:
         case EG_EXP_LOOP_ALWAYS:
         case EG_LIN_LOOP_ALWAYS:
         default:
-            env_val = env;
+            val = env * amp >> 16;
             break;
         }
         return env_val;
