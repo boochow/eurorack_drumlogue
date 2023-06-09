@@ -100,6 +100,8 @@ enum EGTrigger {
     EG_A_ATTACK_END,
     EG_B_END,
     EG_B_ATTACK_END,
+    EG_A_DECY_B_END,
+    EG_B_DECY_A_END,
     EGTRIGGERCOUNT
 };
 
@@ -426,13 +428,19 @@ private:
             trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
         case EG_A_ATTACK_END:
-            trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
+            trigger = (envelope_.segment() > braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
             break;
         case EG_B_END:
             trigger = (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
         case EG_B_ATTACK_END:
-            trigger = (envelope2_.segment() > braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
+            trigger = (envelope2_.segment() > braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
+            break;
+        case EG_A_DECY_B_END:
+            trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY) * (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
+            break;
+        case EG_B_DECY_A_END:
+            trigger = (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY) * (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
         default:
             trigger = trigger_;
@@ -596,6 +604,8 @@ private:
         "A:EOATK",
         "B:EODCY",
         "B:EOATK",
+        "A:D&B:E",
+        "B:D&A:E",
     };
 
     const int16_t Presets[PRESET_COUNT][24] = {
