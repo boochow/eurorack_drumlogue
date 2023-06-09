@@ -31,32 +31,32 @@ const __unit_header unit_header_t unit_header = {
         {-256, 255, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Color"}},
 
         // Page 2
-        {-2, 2, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Octave"}},
-        {-127, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Pitch"}},
-        {0, 6, 0, 6, k_unit_param_type_strings, 0, 0, 0, {"Bits"}},
-        {0, 5, 0, 5, k_unit_param_type_strings, 0, 0, 0, {"Rate"}},
+        {-128, 127, 0, 127, k_unit_param_type_none, 0, 0, 0, {"A:EX/LN "}},
+        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Trigger"}},
+        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack"}},
+        {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
 
         // Page 3
-        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack1"}},
-        {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay1"}},
-        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack2"}},
-        {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay2"}},
-
-        // Page 4
-        {0, 11, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"EG1Type"}},
-        {0, 11, 0, 1, k_unit_param_type_strings, 0, 0, 0, {"EG2Type"}},
         {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"VCA Src"}},
         {0, 15, 0, 15, k_unit_param_type_none, 0, 0, 0, {"VCA Int"}},
+        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"FM Src"}},
+        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"FM Int"}},
+
+        // Page 4
+        {-128, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"B:EX/LN"}},
+        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Trigger"}},
+        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack"}},
+        {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
 
         // Page 5
         {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Tmb Src"}},
         {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Tmb Int"}},
         {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Col Src"}},
         {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Col Int"}},
-
+ 
         // Page 6
-        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"FM Src"}},
-        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"FM Int"}},
-        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"A TRIG"}},
-        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"B TRIG"}},
-}};
+        {-2, 2, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Octave"}},
+        {-127, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Pitch"}},
+        {0, 6, 0, 6, k_unit_param_type_strings, 0, 0, 0, {"Bits"}},
+        {0, 5, 0, 5, k_unit_param_type_strings, 0, 0, 0, {"Rate"}}},
+};

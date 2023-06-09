@@ -18,11 +18,6 @@ namespace braids {
         ENV_NUM_SEGMENTS,
     };
 
-    enum EnvelopeCurve {
-        ENVELOPE_EXP,
-        ENVELOPE_LINEAR,
-    };
-
     class LinEnvelope {
     public:
         void Init() {
@@ -31,7 +26,6 @@ namespace braids {
             target_[ENV_SEGMENT_DEAD] = 0;
             increment_[ENV_SEGMENT_DEAD] = 0;
             loop_ = 0;
-            curve_ = ENVELOPE_EXP;
             prev_trigger_ = 0;
         }
 
@@ -56,17 +50,16 @@ namespace braids {
 
         inline uint16_t Render(int trigger) {
             uint32_t increment = increment_[segment_];
+            uint32_t r_value;
             phase_ += increment;
             if (phase_ < increment) {
                 value_ = Mix(a_, b_, 65535);
                 Trigger(static_cast<EnvelopeSegment>(segment_ + 1));
             }
             if (increment_[segment_]) {
-                if (curve_ == ENVELOPE_LINEAR) {
-                    value_ = Mix(a_, b_, phase_ >> 16);
-                } else {
-                    value_ = Mix(a_, b_, Interpolate824(lut_env_expo, phase_));
-                }
+                value_ = Mix(a_, b_, Interpolate824(lut_env_expo, phase_));
+                r_value = Mix(a_, b_, 65535 - Interpolate824(lut_env_expo, 65535 - phase_));
+                value_ = Mix(r_value, value_, curve_);
             } else if (loop_) {
                 Trigger(ENV_SEGMENT_ATTACK);
             }
@@ -81,12 +74,8 @@ namespace braids {
             prev_trigger_ = 0;
         }
 
-        inline void SetCurve(EnvelopeCurve value) {
+        inline void SetCurve(uint16_t value) {
             curve_ = value;
-        }
-
-        inline void SetLoop(uint16_t value) {
-            loop_ = value;
         }
 
     private:
@@ -110,7 +99,7 @@ namespace braids {
 
         // Variation
         uint16_t loop_;
-        EnvelopeCurve curve_;
+        uint16_t curve_;
     };
 
 }  // namespace braids

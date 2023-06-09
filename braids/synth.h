@@ -27,9 +27,8 @@
 
 using namespace stmlib;
 
-constexpr size_t PRESET_COUNT = 2;
+constexpr size_t PRESET_COUNT = 1;
 const char *PresetNameStr[PRESET_COUNT] = {
-    "Init",
     "Init",
 };
 
@@ -38,26 +37,26 @@ enum Params {
     Shape,
     Param1,
     Param2,
-    Octave,
-    Pitch,
-    Resolution,
-    SampleRate,
+    EG1Curve,
+    EG1Trigger,
     Attack,
     Decay,
-    Attack2,
-    Decay2,
-    EG1Type,
-    EG2Type,
     ModSrcVCA,
     ModIntVCA,
+    ModSrcFM,
+    ModIntFM,
+    EG2Curve,
+    EG2Trigger,
+    Attack2,
+    Decay2,
     ModSrcTimbre,
     ModIntTimbre,
     ModSrcColor,
     ModIntColor,
-    ModSrcFM,
-    ModIntFM,
-    EG1Trigger,
-    EG2Trigger,
+    Octave,
+    Pitch,
+    Resolution,
+    SampleRate,
     ModSrcShape,
     ModIntShape,
     Signature,
@@ -78,7 +77,7 @@ enum ModulationSrc {
     SRC_A_PLUS_B_MINUS_AB,
     MODSRCCOUNT
 };
-
+/*
 enum EGType {
     EG_EXP_1SHOT_ALWAYS,
     EG_EXP_LOOP_ALWAYS,
@@ -94,7 +93,7 @@ enum EGType {
     EG_LIN_LOOP_DECAY,
     EGTYPECOUNT
 };
-
+*/
 enum EGTrigger {
     EG_GATEON,
     EG_A_END,
@@ -165,38 +164,35 @@ public:
 
         int16_t buf[bufsize] = {};
         const uint8_t sync[bufsize] = {};
-        int16_t env1trigger = getTrigger(p_[EG1Trigger], envelope_);
-        int16_t env2trigger = getTrigger(p_[EG2Trigger], envelope2_);
+        int16_t env1trigger = getTrigger(p_[EG1Trigger]);
+        int16_t env2trigger = getTrigger(p_[EG2Trigger]);
         size_t decimation_factor = decimation_factors[p_[SampleRate]];
         uint16_t bit_mask = bit_reduction_masks[p_[Resolution]];
         uint16_t signature = p_[Signature] * p_[Signature] * 4095;
         static uint32_t n = 0;
         static int16_t current_sample = 0;
         for(uint32_t p = 0; p < frames; p += bufsize) {
-            uint32_t env = envelope_.Render(env1trigger);
+            uint32_t env1 = envelope_.Render(env1trigger);
             uint32_t env2 = envelope2_.Render(env2trigger);
-            uint32_t env1_val = getEgVal(p_[EG1Type], env, envelope2_.segment());
-            uint32_t env2_val = getEgVal(p_[EG2Type], env2, envelope_.segment());
-
             uint32_t env_val;
             uint32_t env_int;
 
             // Set timbre and color: parameter value + internal modulation.
             int32_t timbre = timbre_;
-            env_val = getModVal(p_[ModSrcTimbre], env1_val, env2_val);
+            env_val = getModVal(p_[ModSrcTimbre], env1, env2);
             env_int = clipminmax(0, p_[ModIntTimbre], 15);
             timbre += env_val * env_int >> 5;
             CONSTRAIN(timbre, 0, 32767);
 
             int32_t color = color_;
-            env_val = getModVal(p_[ModSrcColor], env1_val, env2_val);
+            env_val = getModVal(p_[ModSrcColor], env1, env2);
             env_int = clipminmax(0, p_[ModIntColor], 15);
             color += env_val * env_int >> 5;
             CONSTRAIN(color, 0, 32767);
             osc_.set_parameters(timbre, color);
 
             int32_t pitch = pitch_;
-            env_val = getModVal(p_[ModSrcFM], env1_val, env2_val);
+            env_val = getModVal(p_[ModSrcFM], env1, env2);
             env_int = clipminmax(0, p_[ModIntFM], 15);
             pitch += jitter_source_.Render(p_[VCO_Drift]);
             pitch += p_[Pitch] + p_[Octave] * 12 * 128;
@@ -213,7 +209,7 @@ public:
             size_t r_size = (bufsize < (frames - p)) ? bufsize : frames - p;
             osc_.Render(sync, buf, r_size);
 
-            env_val = getModVal(p_[ModSrcVCA], env1_val, env2_val);
+            env_val = getModVal(p_[ModSrcVCA], env1, env2);
             int32_t gain = (env_val * p_[ModIntVCA] >> 4);
             gain += (15 - p_[ModIntVCA]) * (gate_ > 0) << 11;
             
@@ -260,13 +256,11 @@ public:
         case Decay2:
             envelope2_.Update(p_[Attack2], p_[Decay2]);
             break;
-        case EG1Type:
-            envelope_.SetCurve(getCurve(static_cast<EGType>(value)));
-            envelope_.SetLoop(getLoop(static_cast<EGType>(value)));
+        case EG1Curve:
+            envelope_.SetCurve((value + 128) << 8);
             break;
-        case EG2Type:
-            envelope2_.SetCurve(getCurve(static_cast<EGType>(value)));
-            envelope2_.SetLoop(getLoop(static_cast<EGType>(value)));
+        case EG2Curve:
+            envelope2_.SetCurve((value + 128) << 8);
             break;
         case EG1Trigger:
             envelope_.Reset();
@@ -339,15 +333,6 @@ public:
             } else {
                 return nullptr;
             }
-
-        case EG1Type:
-        case EG2Type:
-            if (value < EGTYPECOUNT) {
-                return EGTypeStr[value];
-            } else {
-                return nullptr;
-            }
-
         case EG1Trigger:
         case EG2Trigger:
             if (value < EGTRIGGERCOUNT) {
@@ -434,14 +419,14 @@ public:
     }
 
 private:
-    inline int16_t getTrigger(int32_t type, braids::LinEnvelope env) {
+    inline int16_t getTrigger(int32_t type) {
         int16_t trigger;
         switch(type) {
         case EG_A_END:
             trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
         case EG_A_ATTACK_END:
-            trigger = (envelope_.segment() > braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
+            trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
             break;
         case EG_B_END:
             trigger = (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
@@ -490,52 +475,6 @@ private:
         }
         CONSTRAIN(env_val, 0, 0xffff);
         return env_val;
-    }
-
-    inline uint32_t getEgVal(int32_t type, uint32_t env, braids::EnvelopeSegment seg) {
-        uint32_t val;
-        switch(type) {
-        case EG_EXP_LOOP_GATE:
-        case EG_LIN_LOOP_GATE:
-            val = env * (gate_ > 0);
-            break;
-        case EG_EXP_LOOP_NOTGATE:
-        case EG_LIN_LOOP_NOTGATE:
-            val = env * (gate_ == 0);
-            break;
-        case EG_EXP_LOOP_ATTACK:
-        case EG_LIN_LOOP_ATTACK:
-            val = env * (seg == braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
-            break;
-        case EG_EXP_LOOP_DECAY:
-        case EG_LIN_LOOP_DECAY:
-            val = env * (seg == braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
-            break;
-        case EG_EXP_1SHOT_ALWAYS:
-        case EG_LIN_1SHOT_ALWAYS:
-        case EG_EXP_LOOP_ALWAYS:
-        case EG_LIN_LOOP_ALWAYS:
-        default:
-            val = env;
-            break;
-        }
-        return val;
-    }
-
-    inline braids::EnvelopeCurve getCurve(EGType type) {
-        if (type >= EG_LIN_1SHOT_ALWAYS) {
-            return braids::EnvelopeCurve::ENVELOPE_LINEAR;
-        } else {
-            return braids::EnvelopeCurve::ENVELOPE_EXP;
-        }
-    }
-
-    inline int16_t getLoop(EGType type) {
-        if ((type == EG_EXP_1SHOT_ALWAYS) || (type == EG_LIN_1SHOT_ALWAYS)) {
-            return 0;
-        } else {
-            return 1;
-        }
     }
 
     std::atomic_uint_fast32_t flags_;
@@ -651,21 +590,6 @@ private:
         "A+B-A*B",
     };
 
-    const char *EGTypeStr[EGTYPECOUNT] ={
-        "E/1SHOT",
-        "E/LOOP",
-        "E/L/G",
-        "E/L/-G",
-        "E/L/ATK",
-        "E/L/DCY",
-        "L/1SHOT",
-        "L/LOOP",
-        "L/L/G",
-        "L/L/-G",
-        "L/L/ATK",
-        "L/L/DCY",
-    };
-
     const char *EGTriggerStr[EGTRIGGERCOUNT] = {
         "GATE ON",
         "EG A ED",
@@ -676,25 +600,19 @@ private:
 
     const int16_t Presets[PRESET_COUNT][24] = {
 	// Note, Shape, Timbre, Color,
-        // Attack, Decay, EG=>Timbre, EG=>Color,
-        // Bits, Rate, Sign, EG=>VCA,
-        // Octave, Pitch, Flatten, Drift,
-        // EG=>FM,
+        // EG1 Curve, Trigger, Attack, Decay,
+        // Mod VCA src, int, FM src, int,
+        // EG2 Curve, Trigger, Attack, Decay,
+        // Mod Timbre src, int, Color src, int,
+        // Octave, Pitch, Resolution, SampleRate
 
 	// "Init"
 	{60, 0, 0, 0,
-	 0, 0, 6, 5,
-	 0, 45, 30, 45,
-	 EG_EXP_1SHOT_ALWAYS, EG_EXP_LOOP_ALWAYS, SRC_EG1, 15,
-         SRC_EG1, 0, SRC_EG1, 0,
-	 SRC_EG1, 0, SRC_EG1, 0},
-
-	// "Init"
-	{60, 0, 0, 0,
-	 0, 0, 6, 5,
-	 0, 45, 30, 45,
-	 SRC_EG1, 0, SRC_EG1, 0,
+	 127, EG_GATEON, 0, 45,
 	 SRC_EG1, 15, SRC_EG1, 0,
-	 SRC_EG1, 0, EG_EXP_1SHOT_ALWAYS, EG_EXP_LOOP_ALWAYS},
+	 0, EG_GATEON, 30, 45,
+	 SRC_EG2, 0, SRC_EG2, 0,
+         0, 0, 6, 5},
+
     };
 };
