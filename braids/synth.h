@@ -428,13 +428,13 @@ private:
             trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
         case EG_A_ATTACK_END:
-            trigger = (envelope_.segment() > braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
+            trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
             break;
         case EG_B_END:
             trigger = (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
         case EG_B_ATTACK_END:
-            trigger = (envelope2_.segment() > braids::EnvelopeSegment::ENV_SEGMENT_ATTACK);
+            trigger = (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
             break;
         case EG_A_DECY_B_END:
             trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY) * (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
