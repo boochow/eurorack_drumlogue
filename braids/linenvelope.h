@@ -50,7 +50,7 @@ namespace braids {
 
         inline uint16_t Render(int trigger) {
             uint32_t increment = increment_[segment_];
-            uint32_t r_value;
+            uint32_t linear;
             phase_ += increment;
             if (phase_ < increment) {
                 value_ = Mix(a_, b_, 65535);
@@ -58,8 +58,8 @@ namespace braids {
             }
             if (increment_[segment_]) {
                 value_ = Mix(a_, b_, Interpolate824(lut_env_expo, phase_));
-                r_value = Mix(a_, b_, 65535 - Interpolate824(lut_env_expo, 65535 - phase_));
-                value_ = Mix(r_value, value_, curve_);
+                linear = Mix(a_, b_, phase_ >> 16);
+                value_ = Mix(linear, value_, curve_);
             } else if (loop_) {
                 Trigger(ENV_SEGMENT_ATTACK);
             }

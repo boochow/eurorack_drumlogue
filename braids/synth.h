@@ -259,10 +259,10 @@ public:
             envelope2_.Update(p_[Attack2], p_[Decay2]);
             break;
         case EG1Curve:
-            envelope_.SetCurve((value + 128) << 8);
+            envelope_.SetCurve(value << 9);
             break;
         case EG2Curve:
-            envelope2_.SetCurve((value + 128) << 8);
+            envelope2_.SetCurve(value << 9);
             break;
         case EG1Trigger:
             envelope_.Reset();

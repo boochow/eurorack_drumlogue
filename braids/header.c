@@ -31,7 +31,7 @@ const __unit_header unit_header_t unit_header = {
         {-256, 255, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Color"}},
 
         // Page 2
-        {-128, 127, 0, 127, k_unit_param_type_none, 0, 0, 0, {"A:EX/LN "}},
+        {0, 127, 0, 127, k_unit_param_type_none, 0, 0, 0, {"A:EX/LN "}},
         {0, 6, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Trigger"}},
         {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack"}},
         {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
@@ -43,7 +43,7 @@ const __unit_header unit_header_t unit_header = {
         {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"FM Int"}},
 
         // Page 4
-        {-128, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"B:EX/LN"}},
+        {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"B:EX/LN"}},
         {0, 6, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Trigger"}},
         {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack"}},
         {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
