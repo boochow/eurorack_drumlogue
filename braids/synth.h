@@ -591,11 +591,11 @@ private:
     };
 
     const char *EGTriggerStr[EGTRIGGERCOUNT] = {
-        "GATE ON",
-        "EG A ED",
-        "A ATKED",
-        "EG B ED",
-        "B ATKED",
+        "G:ON",
+        "A:EODCY",
+        "A:EOATK",
+        "B:EODCY",
+        "B:EOATK",
     };
 
     const int16_t Presets[PRESET_COUNT][24] = {
