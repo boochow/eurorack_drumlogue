@@ -1,5 +1,5 @@
-#ifndef BRAIDS_LINENVELOPE_H_
-#define BRAIDS_LINENVELOPE_H_
+#ifndef BRAIDS_ENVELOPE_MOD_H_
+#define BRAIDS_ENVELOPE_MOD_H_
 
 #include "stmlib/stmlib.h"
 
@@ -7,18 +7,23 @@
 
 #include "braids/resources.h"
 
-#include "braids/envelope.h"
-
 namespace braids {
 
     using namespace stmlib;
+
+    enum EnvelopeSegment {
+        ENV_SEGMENT_ATTACK = 0,
+        ENV_SEGMENT_DECAY = 1,
+        ENV_SEGMENT_DEAD = 2,
+        ENV_NUM_SEGMENTS,
+    };
 
     enum EnvelopeCurve {
         ENVELOPE_EXP,
         ENVELOPE_LINEAR,
     };
 
-    class LinEnvelope : public Envelope {
+    class LinEnvelope {
     public:
         void Init() {
             target_[ENV_SEGMENT_ATTACK] = 65535;
@@ -27,6 +32,7 @@ namespace braids {
             increment_[ENV_SEGMENT_DEAD] = 0;
             loop_ = 0;
             curve_ = ENVELOPE_EXP;
+            prev_trigger_ = 0;
         }
 
         inline EnvelopeSegment segment() const {
@@ -48,7 +54,7 @@ namespace braids {
             phase_ = 0;
         }
 
-        inline uint16_t Render() {
+        inline uint16_t Render(int trigger) {
             uint32_t increment = increment_[segment_];
             phase_ += increment;
             if (phase_ < increment) {
@@ -64,7 +70,15 @@ namespace braids {
             } else if (loop_) {
                 Trigger(ENV_SEGMENT_ATTACK);
             }
+            if (trigger - prev_trigger_ > 0) {
+                Trigger(ENV_SEGMENT_ATTACK);
+            }
+            prev_trigger_ = trigger;
             return value_;
+        }
+
+        inline void Reset() {
+            prev_trigger_ = 0;
         }
 
         inline void SetCurve(EnvelopeCurve value) {
@@ -82,6 +96,9 @@ namespace braids {
         // Value that needs to be reached at the end of each segment.
         uint16_t target_[ENV_NUM_SEGMENTS];
   
+        // Trigger detector
+        uint16_t prev_trigger_;
+
         // Current segment.
         size_t segment_;
   
@@ -98,4 +115,4 @@ namespace braids {
 
 }  // namespace braids
 
-#endif  // BRAIDS_LINENVELOPE_H_
+#endif  // BRAIDS_ENVELOPE_MOD_H_

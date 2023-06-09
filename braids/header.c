@@ -45,18 +45,18 @@ const __unit_header unit_header_t unit_header = {
         // Page 4
         {0, 11, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"EG1Type"}},
         {0, 11, 0, 1, k_unit_param_type_strings, 0, 0, 0, {"EG2Type"}},
-        {0, 7, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"VCA Src"}},
+        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"VCA Src"}},
         {0, 15, 0, 15, k_unit_param_type_none, 0, 0, 0, {"VCA Int"}},
 
         // Page 5
-        {0, 7, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Tmb Src"}},
+        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Tmb Src"}},
         {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Tmb Int"}},
-        {0, 7, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Col Src"}},
+        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Col Src"}},
         {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Col Int"}},
 
         // Page 6
-        {0, 7, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"FM Src"}},
+        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"FM Src"}},
         {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"FM Int"}},
-        {0, 7, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"MetaSrc"}},
-        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"MetaInt"}},
+        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"A TRIG"}},
+        {0, 4, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"B TRIG"}},
 }};
