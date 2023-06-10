@@ -77,31 +77,15 @@ enum ModulationSrc {
     SRC_A_PLUS_B_MINUS_AB,
     MODSRCCOUNT
 };
-/*
-enum EGType {
-    EG_EXP_1SHOT_ALWAYS,
-    EG_EXP_LOOP_ALWAYS,
-    EG_EXP_LOOP_GATE,
-    EG_EXP_LOOP_NOTGATE,
-    EG_EXP_LOOP_ATTACK,
-    EG_EXP_LOOP_DECAY,
-    EG_LIN_1SHOT_ALWAYS,
-    EG_LIN_LOOP_ALWAYS,
-    EG_LIN_LOOP_GATE,
-    EG_LIN_LOOP_NOTGATE,
-    EG_LIN_LOOP_ATTACK,
-    EG_LIN_LOOP_DECAY,
-    EGTYPECOUNT
-};
-*/
+
 enum EGTrigger {
     EG_GATEON,
     EG_A_END,
     EG_A_ATTACK_END,
     EG_B_END,
     EG_B_ATTACK_END,
-    EG_A_DECY_B_END,
-    EG_B_DECY_A_END,
+    EG_A_DCY_B_END,
+    EG_B_DCY_A_END,
     EGTRIGGERCOUNT
 };
 
@@ -436,10 +420,10 @@ private:
         case EG_B_ATTACK_END:
             trigger = (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY);
             break;
-        case EG_A_DECY_B_END:
+        case EG_A_DCY_B_END:
             trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY) * (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
-        case EG_B_DECY_A_END:
+        case EG_B_DCY_A_END:
             trigger = (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY) * (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
         default:
