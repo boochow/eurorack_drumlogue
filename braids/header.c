@@ -18,7 +18,7 @@ const __unit_header unit_header_t unit_header = {
     .unit_id = 0x02010000U, // Product number(02),Unit type(01=Synth),reserved
     .version = 0x00010000U, // major.minor.patch (major<<16 minor<<8 patch).
     .name = "MacroOsc1",
-    .num_presets = 1,       // Number of internal presets this unit has
+    .num_presets = 3,       // Number of internal presets this unit has
     .num_params = 24,        // Number of parameters for this unit, max 24
     .params = {
         // Format: min, max, center, default, type, fractional, frac. type, <reserved>, name

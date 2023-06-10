@@ -27,9 +27,11 @@
 
 using namespace stmlib;
 
-constexpr size_t PRESET_COUNT = 2;
+constexpr size_t PRESET_COUNT = 4;
 const char *PresetNameStr[PRESET_COUNT] = {
     "Init",
+    "SpcVoice",
+    "BrokenAI",
     "Laughing",
 };
 
@@ -608,6 +610,22 @@ private:
 	 0, EG_GATEON, 30, 45,
 	 SRC_EG2, 0, SRC_EG2, 0,
          0, 0, 6, 5},
+
+	// "SpcVoice"
+	{45, 21, -62, 22,
+	 74, EG_GATEON, 80, 117,
+	 SRC_EG1, 15, SRC_EG1, 0,
+	 0, EG_B_END, 40, 40,
+	 SRC_EG1, 13, SRC_MUL, 12,
+         0, 0, 6, 5},
+
+	// "BrokenAI"
+	{60, 40, -40, -47,
+	 20, EG_GATEON, 22, 94,
+	 SRC_EG1, 8, SRC_EG1, 0,
+	 0, EG_GATEON, 75, 80,
+	 SRC_EG2, 5, SRC_EG2, 0,
+         -1, 0, 6, 2},
 
 	// "Laughing"
 	{60, 27, 9, 41,
