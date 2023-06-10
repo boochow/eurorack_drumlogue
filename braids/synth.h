@@ -492,7 +492,7 @@ private:
     /* Private Methods. */
     /* Constants. */
     const char *ShapeStr[47] = {
-        "CS SAW",
+        "CS SAW",  // 0
         "Morph",
         "Saw Sqr",
         "Fold",
@@ -502,7 +502,7 @@ private:
         "SqrSync",
         "SawSync",
         "Saw x 3",
-        "Sqr x 3",
+        "Sqr x 3", // 10
         "Tri x 3",
         "Sin x 3",
         "Ring",
@@ -512,7 +512,7 @@ private:
         "Phz LPF",
         "Phz PkF",
         "Phz BPF",
-        "Phz HPF",
+        "Phz HPF", // 20
         "Vo sim",
         "Vowel",
         "Vwl FOF",
@@ -522,7 +522,7 @@ private:
         "Chaotic",
         "Plucked",
         "Bowed",
-        "Blown",
+        "Blown",   // 30
         "Fluted",
         "Bell",
         "Drum",
@@ -532,13 +532,13 @@ private:
         "WaveTbl",
         "WaveMap",
         "WavLine",
-        "WvTblx4",
+        "WvTblx4", // 40
         "FltNois",
         "Twin Q",
         "Clocked",
         "GrnlrCld",
         "PartclNz",
-        "QPSK",
+        "QPSK",    // 46
     };
 
     const char *BitsStr[7] = {
