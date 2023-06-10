@@ -2,7 +2,7 @@
 # Project Configuration
 #
 
-PROJECT := macroosc1
+PROJECT := lillian
 PROJECT_TYPE := synth
 
 ##############################################################################
