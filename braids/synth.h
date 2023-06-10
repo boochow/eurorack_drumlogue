@@ -27,9 +27,10 @@
 
 using namespace stmlib;
 
-constexpr size_t PRESET_COUNT = 1;
+constexpr size_t PRESET_COUNT = 2;
 const char *PresetNameStr[PRESET_COUNT] = {
     "Init",
+    "Laughing",
 };
 
 enum Params {
@@ -606,6 +607,14 @@ private:
 	 SRC_EG1, 15, SRC_EG1, 0,
 	 0, EG_GATEON, 30, 45,
 	 SRC_EG2, 0, SRC_EG2, 0,
+         0, 0, 6, 5},
+
+	// "Laughing"
+	{60, 27, 9, 41,
+	 77, EG_GATEON, 57, 94,
+	 SRC_A_MINUS_AB, 15, SRC_A_MINUS_AB, 3,
+	 127, EG_A_DCY_B_END, 39, 38,
+	 SRC_EG1, 4, SRC_MUL, 3,
          0, 0, 6, 5},
 
     };
