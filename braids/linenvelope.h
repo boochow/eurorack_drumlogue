@@ -25,7 +25,6 @@ namespace braids {
             target_[ENV_SEGMENT_DECAY] = 0;
             target_[ENV_SEGMENT_DEAD] = 0;
             increment_[ENV_SEGMENT_DEAD] = 0;
-            loop_ = 0;
             prev_trigger_ = 0;
         }
 
@@ -60,8 +59,6 @@ namespace braids {
                 value_ = Mix(a_, b_, Interpolate824(lut_env_expo, phase_));
                 linear = Mix(a_, b_, phase_ >> 16);
                 value_ = Mix(linear, value_, curve_);
-            } else if (loop_) {
-                Trigger(ENV_SEGMENT_ATTACK);
             }
             if (trigger - prev_trigger_ > 0) {
                 Trigger(ENV_SEGMENT_ATTACK);
@@ -98,7 +95,6 @@ namespace braids {
         uint32_t phase_;
 
         // Variation
-        uint16_t loop_;
         uint16_t curve_;
     };
 
