@@ -175,20 +175,20 @@ public:
             // Set timbre and color: parameter value + internal modulation.
             int32_t timbre = timbre_;
             env_val = getModVal(p_[ModSrcTimbre], env1, env2);
-            env_int = clipminmax(0, p_[ModIntTimbre], 15);
-            timbre += env_val * env_int >> 5;
+            env_int = clipminmax(0, p_[ModIntTimbre], 31);
+            timbre += env_val * env_int >> 6;
             CONSTRAIN(timbre, 0, 32767);
 
             int32_t color = color_;
             env_val = getModVal(p_[ModSrcColor], env1, env2);
-            env_int = clipminmax(0, p_[ModIntColor], 15);
-            color += env_val * env_int >> 5;
+            env_int = clipminmax(0, p_[ModIntColor], 31);
+            color += env_val * env_int >> 6;
             CONSTRAIN(color, 0, 32767);
             osc_.set_parameters(timbre, color);
 
             int32_t pitch = pitch_;
             env_val = getModVal(p_[ModSrcFM], env1, env2);
-            env_int = clipminmax(0, p_[ModIntFM], 15);
+            env_int = clipminmax(0, p_[ModIntFM], 31);
             pitch += jitter_source_.Render(p_[VCO_Drift]);
             pitch += p_[Pitch] + p_[Octave] * 12 * 128;
             pitch += env_val * env_int >> 7;
@@ -205,8 +205,8 @@ public:
             osc_.Render(sync, buf, r_size);
 
             env_val = getModVal(p_[ModSrcVCA], env1, env2);
-            int32_t gain = (env_val * p_[ModIntVCA] >> 4);
-            gain += (15 - p_[ModIntVCA]) * (gate_ > 0) << 11;
+            int32_t gain = (env_val * p_[ModIntVCA] >> 5);
+            gain += (31 - p_[ModIntVCA]) * (gate_ > 0) << 10;
             
             // Copy to the buffer with sample rate and bit reduction applied.
             for(uint32_t i = 0; i < r_size ; i++, n++, out_p += 2) {
@@ -617,7 +617,7 @@ private:
 	// "Init"
 	{60, 0, 0, 0,
 	 127, EG_GATEON, 0, 45,
-	 SRC_EG1, 15, SRC_EG1, 0,
+	 SRC_EG1, 31, SRC_EG1, 0,
 	 0, EG_GATEON, 30, 45,
 	 SRC_EG2, 0, SRC_EG2, 0,
          0, 0, 6, 5},
@@ -625,65 +625,65 @@ private:
 	// "SpcVoice"
 	{45, 21, -62, 22,
 	 74, EG_GATEON, 80, 117,
-	 SRC_EG1, 15, SRC_EG1, 0,
+	 SRC_EG1, 31, SRC_EG1, 0,
 	 0, EG_B_END, 40, 40,
-	 SRC_EG1, 13, SRC_MUL, 12,
+	 SRC_EG1, 27, SRC_MUL, 15,
          0, 0, 6, 5},
 
 	// "BrokenAI"
 	{60, 40, -40, -47,
 	 20, EG_GATEON, 22, 94,
-	 SRC_EG1, 8, SRC_EG1, 0,
+	 SRC_EG1, 17, SRC_EG1, 0,
 	 0, EG_GATEON, 75, 80,
-	 SRC_EG2, 5, SRC_EG2, 0,
-         -1, 0, 6, 2},
+	 SRC_EG2, 11, SRC_EG2, 0,
+         -1, 0, 6, 5},
 
 	// "SuperSaw"
 	{60, 14, -128, -163,
 	 127, EG_GATEON, 0, 85,
-	 SRC_EG1, 15, SRC_EG1, 0,
+	 SRC_EG1, 31, SRC_EG1, 0,
 	 0, EG_GATEON, 0, 68,
-	 SRC_A_MINUS_AB, 15, SRC_EG2, 0,
+	 SRC_A_MINUS_AB, 31, SRC_EG2, 0,
          0, 0, 6, 5},
 
 	// "Shaku"
 	{60, 29, 46, -100,
 	 0, EG_GATEON, 0, 93,
-	 SRC_EG1, 15, SRC_EG2, 0,
+	 SRC_EG1, 31, SRC_EG2, 0,
 	 0, EG_B_END, 40, 40,
-	 SRC_EG2, 7, SRC_A_MINUS_AB, 3,
+	 SRC_EG2, 15, SRC_A_MINUS_AB, 7,
          0, 0, 6, 5},
 
 	// "PhazBass"
 	{48, 17, -150, -160,
 	 85, EG_GATEON, 0, 50,
-	 SRC_EG1, 15, SRC_EG1, 0,
+	 SRC_EG1, 31, SRC_EG1, 0,
 	 0, EG_B_END, 30, 30,
-	 SRC_EG2, 2, SRC_EG1, 8,
+	 SRC_EG2, 5, SRC_EG1, 17,
          0, 0, 6, 5},
 
 	// "Maj7th+3rd"
 	{60, 9, 124, 170,
 	 127, EG_GATEON, 70, 113,
-	 SRC_SUM, 15, SRC_EG1, 0,
+	 SRC_SUM, 31, SRC_EG1, 0,
 	 127, EG_A_ATTACK_END, 65, 76,
 	 SRC_EG2, 0, SRC_EG2, 0,
          0, 0, 6, 5},
 
 	// "Robot"
 	{60, 15, -52, 152,
-	 37, EG_B_END, 85, 75,
-	 SRC_SUM, 15, SRC_A_PLUS_B_MINUS_2AB, 3,
+	 37, EG_GATEON, 85, 75,
+	 SRC_SUM, 31, SRC_A_PLUS_B_MINUS_2AB, 7,
 	 39, EG_A_ATTACK_END, 30, 69,
-	 SRC_A_MINUS_B, 6, SRC_A_PLUS_B_MINUS_AB, 2,
+	 SRC_A_MINUS_B, 13, SRC_A_PLUS_B_MINUS_AB, 5,
          -1, 0, 6, 5},
 
 	// "Laughing"
 	{60, 27, 9, 41,
 	 77, EG_GATEON, 57, 94,
-	 SRC_A_MINUS_AB, 15, SRC_A_MINUS_AB, 3,
+	 SRC_A_MINUS_AB, 31, SRC_A_MINUS_AB, 7,
 	 127, EG_A_DCY_B_END, 39, 38,
-	 SRC_EG1, 4, SRC_MUL, 3,
+	 SRC_EG1, 9, SRC_MUL, 7,
          0, 0, 6, 5},
 
     };

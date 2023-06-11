@@ -38,9 +38,9 @@ const __unit_header unit_header_t unit_header = {
 
         // Page 3
         {0, 9, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"VCA Src"}},
-        {0, 15, 0, 15, k_unit_param_type_none, 0, 0, 0, {"VCA Int"}},
+        {0, 31, 0, 15, k_unit_param_type_none, 0, 0, 0, {"VCA Int"}},
         {0, 9, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"FM Src"}},
-        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"FM Int"}},
+        {0, 31, 0, 0, k_unit_param_type_none, 0, 0, 0, {"FM Int"}},
 
         // Page 4
         {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"B:Curve"}},
@@ -50,9 +50,9 @@ const __unit_header unit_header_t unit_header = {
 
         // Page 5
         {0, 9, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Tmb Src"}},
-        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Tmb Int"}},
+        {0, 31, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Tmb Int"}},
         {0, 9, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Col Src"}},
-        {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Col Int"}},
+        {0, 31, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Col Int"}},
  
         // Page 6
         {-2, 2, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Octave"}},
