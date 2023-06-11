@@ -32,26 +32,26 @@ const __unit_header unit_header_t unit_header = {
 
         // Page 2
         {0, 127, 0, 127, k_unit_param_type_none, 0, 0, 0, {"A:Curve"}},
-        {0, 6, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Trigger"}},
+        {0, 7, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Trigger"}},
         {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack"}},
         {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
 
         // Page 3
-        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"VCA Src"}},
+        {0, 9, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"VCA Src"}},
         {0, 15, 0, 15, k_unit_param_type_none, 0, 0, 0, {"VCA Int"}},
-        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"FM Src"}},
+        {0, 9, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"FM Src"}},
         {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"FM Int"}},
 
         // Page 4
         {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"B:Curve"}},
-        {0, 6, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Trigger"}},
+        {0, 7, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Trigger"}},
         {0, 127, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Attack"}},
         {0, 127, 0, 48, k_unit_param_type_none, 0, 0, 0, {"Decay"}},
 
         // Page 5
-        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Tmb Src"}},
+        {0, 9, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Tmb Src"}},
         {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Tmb Int"}},
-        {0, 8, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Col Src"}},
+        {0, 9, 0, 0, k_unit_param_type_strings, 0, 0, 0, {"Col Src"}},
         {0, 15, 0, 0, k_unit_param_type_none, 0, 0, 0, {"Col Int"}},
  
         // Page 6
