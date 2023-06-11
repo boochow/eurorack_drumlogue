@@ -83,7 +83,7 @@ namespace braids {
         uint16_t target_[ENV_NUM_SEGMENTS];
   
         // Trigger detector
-        uint16_t prev_trigger_;
+        int16_t prev_trigger_;
 
         // Current segment.
         size_t segment_;

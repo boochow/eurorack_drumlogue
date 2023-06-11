@@ -87,6 +87,7 @@ enum ModulationSrc {
 
 enum EGTrigger {
     EG_GATEON,
+    EG_GATEOFF,
     EG_A_END,
     EG_A_ATTACK_END,
     EG_B_END,
@@ -144,7 +145,6 @@ public:
 
     inline void Reset() {
         gate_ = 0;
-        trigger_ = 0;
     }
 
     inline void Resume() {}
@@ -217,7 +217,6 @@ public:
                 vst1_f32(out_p, vdup_n_f32(amp_ * Mix(sample, warped, signature) / 32768.f));
             }
         }
-        trigger_ = 0;
     }
 
     inline void setParameter(uint8_t index, int32_t value) {
@@ -370,7 +369,6 @@ public:
         amp_ = 1. / 127 * velocity;
         gate_ += 1;
         osc_.Strike();
-        trigger_ = 1;
     }
 
     inline void GateOff() {
@@ -415,6 +413,9 @@ private:
     inline int16_t getTrigger(int32_t type) {
         int16_t trigger;
         switch(type) {
+        case EG_GATEOFF:
+            trigger = -gate_;
+            break;
         case EG_A_END:
             trigger = (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
@@ -434,7 +435,7 @@ private:
             trigger = (envelope2_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DECAY) * (envelope_.segment() == braids::EnvelopeSegment::ENV_SEGMENT_DEAD);
             break;
         default:
-            trigger = trigger_;
+            trigger = gate_;
         }
         return trigger;
     }
@@ -491,8 +492,7 @@ private:
     int16_t timbre_;
     int16_t color_;
     float amp_;
-    uint32_t gate_;
-    int16_t trigger_;
+    int16_t gate_;
 
     uint16_t gain_lp_;
 
