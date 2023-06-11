@@ -81,6 +81,7 @@ enum ModulationSrc {
     SRC_B_MINUS_A,
     SRC_A_MINUS_AB,
     SRC_B_MINUS_AB,
+    SRC_A_PLUS_B_MINUS_AB,
     SRC_A_PLUS_B_MINUS_2AB,
     MODSRCCOUNT
 };
@@ -467,6 +468,9 @@ private:
         case SRC_B_MINUS_AB:
             env_val = env2 - (env * env2 >> 16);
             break;
+        case SRC_A_PLUS_B_MINUS_AB:
+            env_val = env + env2 - (env * env2 >> 16);
+            break;
         case SRC_A_PLUS_B_MINUS_2AB:
             env_val = env + env2 - (env * env2 >> 15);
             break;
@@ -586,11 +590,13 @@ private:
         " B - A",
         "A - A*B",
         "B - A*B",
+        "A+B-A*B",
         "A+B-2AB",
     };
 
     const char *EGTriggerStr[EGTRIGGERCOUNT] = {
         "G:ON",
+        "G:OFF",
         "A:EODCY",
         "A:EOATK",
         "B:EODCY",
