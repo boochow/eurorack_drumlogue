@@ -27,11 +27,15 @@
 
 using namespace stmlib;
 
-constexpr size_t PRESET_COUNT = 4;
+constexpr size_t PRESET_COUNT = 8;
 const char *PresetNameStr[PRESET_COUNT] = {
     "Init",
     "SpcVoice",
     "BrokenAI",
+    "SuperSaw",
+    "Shaku",
+    "PhazBass",
+    "Maj7+3rd",
     "Laughing",
 };
 
@@ -626,6 +630,38 @@ private:
 	 0, EG_GATEON, 75, 80,
 	 SRC_EG2, 5, SRC_EG2, 0,
          -1, 0, 6, 2},
+
+	// "SuperSaw"
+	{60, 14, -128, -163,
+	 127, EG_GATEON, 0, 85,
+	 SRC_EG1, 15, SRC_EG1, 0,
+	 0, EG_GATEON, 0, 68,
+	 SRC_A_MINUS_AB, 15, SRC_EG2, 0,
+         0, 0, 6, 5},
+
+	// "Shaku"
+	{60, 29, 46, -100,
+	 0, EG_GATEON, 0, 93,
+	 SRC_EG1, 15, SRC_EG2, 0,
+	 0, EG_B_END, 40, 40,
+	 SRC_EG2, 7, SRC_A_MINUS_AB, 3,
+         0, 0, 6, 5},
+
+	// "PhazBass"
+	{48, 17, -150, -160,
+	 85, EG_GATEON, 0, 50,
+	 SRC_EG1, 15, SRC_EG1, 0,
+	 0, EG_B_END, 30, 30,
+	 SRC_EG2, 2, SRC_EG1, 8,
+         0, 0, 6, 5},
+
+	// "Maj7th+3rd"
+	{60, 9, 124, 170,
+	 127, EG_GATEON, 70, 113,
+	 SRC_SUM, 15, SRC_EG1, 0,
+	 127, EG_A_ATTACK_END, 65, 76,
+	 SRC_EG2, 0, SRC_EG2, 0,
+         0, 0, 6, 5},
 
 	// "Laughing"
 	{60, 27, 9, 41,
