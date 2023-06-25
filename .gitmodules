@@ -1,0 +1,4 @@
+[submodule "eurorack"]
+	path = eurorack
+	url = https://github.com/boochow/eurorack
+	branch = drumlogue
