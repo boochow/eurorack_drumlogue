@@ -349,6 +349,9 @@ void DigitalOscillator::RenderDigitalFilter(
   while (size--) {
     phase_ += phase_increment_;
     modulator_phase_increment += modulator_phase_increment_increment;
+    if (modulator_phase_increment > 0x3ffffffe) {
+        modulator_phase_increment = 0x3ffffffe;
+    }
     modulator_phase += modulator_phase_increment;
     uint16_t integrator_gain = (modulator_phase_increment >> 14);
     
