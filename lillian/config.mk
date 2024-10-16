@@ -17,7 +17,7 @@ STMLIBDIR   = $(EURORACKDIR)/stmlib
 CSRC = header.c
 
 # C++ sources
-CXXSRC = unit.cc $(BRAIDSDIR)/digital_oscillator.cc $(BRAIDSDIR)/resources.cc $(BRAIDSDIR)/quantizer.cc $(BRAIDSDIR)/macro_oscillator.cc $(BRAIDSDIR)/analog_oscillator.cc $(STMLIBDIR)/utils/random.cc
+CXXSRC = unit.cc digital_oscillator.cc $(BRAIDSDIR)/resources.cc $(BRAIDSDIR)/quantizer.cc $(BRAIDSDIR)/macro_oscillator.cc $(BRAIDSDIR)/analog_oscillator.cc $(STMLIBDIR)/utils/random.cc
 
 # List ASM source files here
 ASMSRC = 
